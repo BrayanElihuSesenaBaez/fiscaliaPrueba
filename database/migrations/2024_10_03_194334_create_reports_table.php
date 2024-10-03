@@ -12,10 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('reports', function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->string('title');
-            $table->string('ulr')->unique();
-            $table->text('description');
+            $table->id();
+            $table->string('description');
+            $table->date('report_date');
+            $table->foreignId('category_id')->constrained('categories')->onDelete('cascade');
+            $table->foreignId('subcategory_id')->constrained('subcategories')->onDelete('cascade');
+            // Mas campos para agregar
             $table->timestamps();
         });
     }

@@ -12,15 +12,15 @@ class ProjectController extends Controller
 
     public function index()
     {
-        return view('projects.index', [
-            'projects' => Project::latest()->paginate()
+        return view('reports.index', [
+            'reports' => Project::latest()->paginate()
         ]);
     }
 
     public function show(Project $project)
     {
 
-        return view('projects.show', [
+        return view('reports.show', [
            'project' => $project
         ]);
     }
