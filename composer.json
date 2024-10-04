@@ -6,7 +6,8 @@
     "license": "MIT",
     "require": {
         "php": "^8.1",
-        "caouecs/laravel-lang": "*",
+        "barryvdh/laravel-dompdf": "^3.0",
+        "barryvdh/laravel-snappy": "*",
         "guzzlehttp/guzzle": "^7.2",
         "laravel-lang/lang": "*",
         "laravel/framework": "^10.10",
