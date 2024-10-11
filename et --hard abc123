@@ -1,0 +1,23 @@
+[33mcommit 5410fbd133f77e7bacc043547ec6bae4548662f6[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m)[m
+Author: BrayanElihuSesenaBaez <awi_elihu@hotmail.com>
+Date:   Wed Oct 9 11:26:18 2024 -0600
+
+    Actualización del formulario y del PDF
+
+[33mcommit e9c14fa71d87db177e1f0de6451b35fca947bf5e[m[33m ([m[1;31morigin/master[m[33m)[m
+Author: BrayanElihuSesenaBaez <awi_elihu@hotmail.com>
+Date:   Fri Oct 4 03:09:41 2024 -0600
+
+    Añadido formulario para el registro de delitos con validación y se agrego tablas para futuros campos del reporte
+
+[33mcommit 543f5ad078702374a9e94ade42c951d29b361e17[m
+Author: BrayanElihuSesenaBaez <awi_elihu@hotmail.com>
+Date:   Thu Oct 3 13:54:19 2024 -0600
+
+    Progreso inicial de la aplicación
+
+[33mcommit 6fb44aac0dfb2e7b63d1f242fe98ddcd65ae147e[m
+Author: BrayanElihuSesenaBaez <awi_elihu@hotmail.com>
+Date:   Thu Oct 3 13:31:17 2024 -0600
+
+    Primer commit
