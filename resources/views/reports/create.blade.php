@@ -1,10 +1,10 @@
-@extends('layouts.app') <!-- Asegúrate de que la ruta sea correcta -->
+@extends('layouts.app')
 
 @section('content') <!-- Sección donde se inyectará el contenido -->
-<h1 class="mb-4">Crear Reporte</h1> <!-- Agregamos un margen inferior -->
+<h1 class="mb-4">Crear Reporte</h1>
 
 @if (session('success'))
-    <p class="alert alert-success">{{ session('success') }}</p> <!-- Mensaje de éxito -->
+    <p class="alert alert-success">{{ session('success') }}</p>
 @endif
 
 <form action="{{ route('reports.store') }}" method="POST">
@@ -110,7 +110,7 @@
             if ($(this).val() === 'otra') {
                 $('#other_institution').show(); // Mostrar campo para otra institución
             } else {
-                $('#other_institution').hide(); // Ocultar campo si no es "Otra"
+                $('#other_institution').hide();
             }
         });
     });

@@ -8,8 +8,7 @@ use App\Models\Report;
 
 class PdfController extends Controller
 {
-    public function generatePdf($reportId)
-    {
+    public function generatePdf($reportId){
         // Obtener el reporte completo
         $report = Report::with(['category', 'subcategory', 'institution'])->findOrFail($reportId);
 

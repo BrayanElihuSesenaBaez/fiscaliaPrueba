@@ -5,8 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Report extends Model
-{
+class Report extends Model{
     use HasFactory;
 
     protected $fillable = [
@@ -22,22 +21,19 @@ class Report extends Model
         'description',
         'category_id',
         'subcategory_id',
+        'pdf_path'
     ];
 
-    public function institution()
-    {
+    public function institution(){
         return $this->belongsTo(Institution::class);
     }
 
-    public function category()
-    {
+    public function category(){
         return $this->belongsTo(Category::class);
     }
 
-    public function subcategory()
-    {
+    public function subcategory(){
         return $this->belongsTo(Subcategory::class);
     }
-
 }
 
