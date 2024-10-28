@@ -4,7 +4,7 @@
     <div class="container">
         <h2 class="mt-5">Lista de Usuarios</h2>
 
-        <a href="{{ route('users.create') }}" class="btn btn-primary mb-3">Crear Nuevo Usuario</a>
+        <a href="{{ route('users.create') }}" class="btn btn-primary mb-3">Crear Nuevo Usuario</a> <!-- Enlace para crear un nuevo usuario -->
 
         @if(session('success'))
             <div class="alert alert-success">
@@ -12,7 +12,7 @@
             </div>
         @endif
 
-        <table class="table table-user-list">
+        <table class="table table-user-list"> <!-- Tabla para listar los usuarios existentes-->
             <thead>
             <tr>
                 <th>ID</th>
@@ -28,7 +28,7 @@
                     <td>{{ $user->id }}</td>
                     <td>{{ $user->name }}</td>
                     <td>{{ $user->email }}</td>
-                    <td>{{ implode(', ', $user->getRoleNames()->toArray()) }}</td>
+                    <td>{{ implode(', ', $user->getRoleNames()->toArray()) }}</td> <!-- Muestra los roles del usuario -->
                     <td>
                         <a href="{{ route('users.edit', $user->id) }}" class="btn btn-warning btn-sm">Editar</a>
                         <form action="{{ route('users.destroy', $user->id) }}" method="POST" style="display:inline;">

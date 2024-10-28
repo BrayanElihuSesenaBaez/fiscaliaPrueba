@@ -6,27 +6,29 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
-class RegisterController extends Controller
-{
+class RegisterController extends Controller{
+
+
     public function register(Request $request){
-        //Se registra el usuario con un nombre, email y contraseña
+
+        //Valida los datos de entrada del formulario de registro
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
         ]);
 
-        //Se crea y se guarda el usuario creado
+        //Crea y guarda un nuevo usuario en la base de datos
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => bcrypt($request->password),
         ]);
 
-        // Se autentica el usuario
+        // Autentica al usuario registrado
         Auth::login($user);
 
-        //Segun el rol es donde se redirige
+        //Redirige al usuario en funcion de su rol
         return redirect()->route(Auth::user()->hasRole('Fiscal General') ? 'dashboard' : 'inicio');
     }
 }

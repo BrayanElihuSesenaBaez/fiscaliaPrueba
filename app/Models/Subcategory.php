@@ -5,10 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Subcategory extends Model
-{
-    public function category()
-    {
+class Subcategory extends Model{
+
+    //Relación con el modelo Category
+    public function category(){
         return $this->belongsTo(Category::class);
     }
 }

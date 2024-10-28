@@ -13,6 +13,7 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable, HasRoles;
 
+    //Campos que se pueden llenar de manera masiva
     protected $fillable = [
         'name',
         'email',

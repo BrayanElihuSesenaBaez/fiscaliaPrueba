@@ -2,10 +2,9 @@
 
 @section('content')
     <div class="container">
-        <h2 class="mt-5">Lista de Reportes</h2>
+        <h1 class="mt-4">Lista de Reportes</h1>
 
-        <!-- Buscador -->
-        <form method="GET" action="{{ route('reports.index') }}">
+        <form method="GET" action="{{ route('reports.index') }}"> <!-- Formulario para buscar reportes -->
             <div class="form-group">
                 <input type="text" name="keyword" class="form-control" placeholder="Buscar por número de expediente, fecha o nombre de la víctima">
             </div>
@@ -13,7 +12,7 @@
         </form>
 
         <!-- Tabla de reportes -->
-        <table class="table table-hover mt-4">
+        <table class="table table-hover mt-4"> <!-- Lista los reportes -->
             <thead>
             <tr>
                 <th>Número de Expediente</th>
@@ -25,6 +24,7 @@
             <tbody>
             @foreach($reports as $report)
                 <tr>
+                    <td>{{ $report->id }}</td>
                     <td>{{ $report->expedient_number }}</td>
                     <td>{{ $report->report_date }}</td>
                     <td>{{ $report->first_name }} {{ $report->last_name }} {{ $report->mother_last_name }}</td>
@@ -33,7 +33,7 @@
                         <a href="{{ route('reports.edit', $report->id) }}" class="btn btn-sm btn-warning">Editar</a>
                         <form action="{{ route('reports.destroy', $report->id) }}" method="POST" style="display:inline-block;">
                             @csrf
-                            @method('DELETE')
+                            @method('DELETE') <!-- Especifica que la solicitud es de tipo DELETE -->
                             <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Estás seguro de eliminar este reporte?')">Eliminar</button>
                         </form>
                     </td>

@@ -6,7 +6,7 @@
 
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name', 'Laravel') }}</title>
+    <title>{{ config('app.name', 'Laravel') }}</title> <!-- TITULO DE LA PAGINA -->
 
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.bunny.net">
@@ -17,7 +17,7 @@
 
     <!-- Custom Styles -->
     <style>
-        /* Estilo general de nuestro main page*/
+        /* Estilo general de la main page*/
         .sidebar {
             border-right: 1px solid #ddd; /* Línea de separación del ladp derecho de la barra lateral */
         }
@@ -74,110 +74,111 @@
     </style>
 
 </head>
-<body>
-<div id="app">
-    <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
-        <!-- Muestra un container en el encabezado y muestra un boton "Fiscalia de Zacatecas" y al presionarlo mando a la pantalla de --
-                inicio, de acuerdo al rol que este en sesión. Muestra el nombre -->
-        <div class="container">
-            <a class="navbar-brand" href="{{ Auth::user()->hasRole('Fiscal General') ? url('dashboard') : url('home') }}">
-                {{ ('Fiscalía General') }}
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+    <body>
+    <div id="app"> <!-- Contenedor principal de la aplicación -->
+        <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm"> <!-- Barra de navegación -->
+            <!-- Muestra un container en el encabezado y muestra un boton "Fiscalia de Zacatecas" y al presionarlo mando a la pantalla de inicio, de acuerdo al rol que este en sesión-->
+            <div class="container">
+                <a class="navbar-brand" href="{{ Auth::user()->hasRole('Fiscal General') ? url('dashboard') : url('home') }}">
+                    {{ ('Fiscalía General') }}
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
 
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <!-- -->
-                <ul class="navbar-nav me-auto"></ul>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <!-- -->
+                    <ul class="navbar-nav me-auto"></ul>
 
-                <!-- -->
-                <ul class="navbar-nav ms-auto">
-                    <!-- Authentication Links -->
-                    @guest
-                        @if (Route::has('login'))
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route('login') }}">{{ __('Login') }}</a>
-                            </li>
-                        @endif
-                    @else
-                        <!-- Muestra un boton de acuerdo al nombre del usuario en sesión-->
-                        <li class="nav-item dropdown">
-                            <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
-                                {{ Auth::user()->name }}
-                            </a>
-
-                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                <!-- Desplaza un boton para cerrar sesión -->
-                                <a class="dropdown-item" href="{{ route('logout') }}"
-                                   onclick="event.preventDefault();
-                                                     document.getElementById('logout-form').submit();">
-                                    {{ __('Cerrar Sesión') }}
-                                </a>
-
-                                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-                                    @csrf
-                                </form>
-                            </div>
-                        </li>
-                    @endguest
-                </ul>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Layout principal con una barra lateral izquierda-->
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Mostrar la barra lateral solo si el usuario es Fiscal General -->
-            @if(Auth::check())
-                <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
-                    <div class="position-sticky">
-                        <ul class="nav flex-column">
-                            <!-- Muestra las opciones para Fiscal General -->
-                            @if(Auth::user()->hasRole('Fiscal General'))
+                    <!-- -->
+                    <ul class="navbar-nav ms-auto">
+                        @guest
+                            @if (Route::has('login'))
                                 <li class="nav-item">
-                                    <a class="nav-link" href="{{ route('users.index') }}">
-                                        <span data-feather="users"></span>
-                                        Lista de Usuarios
-                                    </a>
+                                    <a class="nav-link" href="{{ route('login') }}">{{ __('Login') }}</a>
                                 </li>
                             @endif
-
-                            <!-- Opciones disponibles para todos los fiscales -->
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route('reports.create') }}">
-                                    <span data-feather="file-text"></span>
-                                    Crear Reporte
+                        @else
+                            <!-- Muestra un boton de acuerdo al nombre del usuario en sesión-->
+                            <li class="nav-item dropdown">
+                                <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
+                                    {{ Auth::user()->name }}
                                 </a>
+
+                                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                    <!-- Desplaza un boton para cerrar sesión -->
+                                    <a class="dropdown-item" href="{{ route('logout') }}"
+                                       onclick="event.preventDefault();
+                                                         document.getElementById('logout-form').submit();">
+                                        {{ __('Cerrar Sesión') }}
+                                    </a>
+
+                                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                                        @csrf
+                                    </form>
+                                </div>
                             </li>
-                        </ul>
-                    </div>
-                </nav>
-            @endif
+                        @endguest
+                    </ul>
+                </div>
+            </div>
+        </nav>
 
-            <!-- Main content de los usuarios con diferente rol al Fiscal General-->
-            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-                @yield('content')
+        <!-- Layout principal con una barra lateral izquierda-->
+        <div class="container-fluid">
+            <div class="row">
+                <!-- Muestra la barra lateral solo si el usuario es Fiscal General -->
+                @if(Auth::check())
+                    <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+                        <div class="position-sticky">
+                            <ul class="nav flex-column">
+                                <!-- Muestra las opciones para Fiscal General -->
+                                @if(Auth::user()->hasRole('Fiscal General'))
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ route('users.index') }}">
+                                            <span data-feather="users"></span>
+                                            Lista de Usuarios
+                                        </a>
+                                    </li>
+                                @endif
 
-                <!-- Muestra la pantalla de inicio -->
-                @if (!View::hasSection('content'))
-                    <div class="blank-page">
-                        <h2>Bienvenido al sistema</h2>
-                        <!-- <p>Selecciona una opción en la barra lateral para comenzar.</p> -->
-                    </div>
+                                <!-- Opciones disponibles para todos los fiscales -->
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ route('reports.create') }}">
+                                        <span data-feather="file-text"></span>
+                                        Crear Reporte
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </nav>
                 @endif
-            </main>
+
+
+                <!-- Contenido principal de los usuarios con rol diferente al Fiscal General-->
+                <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                    @yield('content')
+
+                    <!-- Muestra la pantalla de inicio -->
+                    @if (!View::hasSection('content'))
+                        <div class="blank-page">
+                            <h2>Bienvenido al sistema</h2>
+                            <!-- <p>Selecciona una opción en la barra lateral para comenzar.</p> -->
+                        </div>
+                    @endif
+                </main>
+
+
+            </div>
         </div>
     </div>
-</div>
 
-<script src="https://unpkg.com/feather-icons"></script>
-<script>
-    feather.replace();
-</script>
+    <script src="https://unpkg.com/feather-icons"></script> <!-- Script para iconos Feather -->
+    <script>
+        feather.replace();
+    </script>
 
-</body>
+    </body>
 </html>
 
 

@@ -7,8 +7,7 @@ use App\Models\Subcategory;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
-class CategorySeeder extends Seeder
-{
+class CategorySeeder extends Seeder{
 
     public function run(){
         //i. Delitos que atentan contra la vida y la integridad corporal
@@ -85,11 +84,12 @@ class CategorySeeder extends Seeder
 
         ];
 
+        //Crea las categorias y subcategorias en la base de datos
         foreach ($categories as $categoryName => $subcategories) {
-            $category = Category::create(['name' => $categoryName]);
+            $category = Category::create(['name' => $categoryName]); //Crea una nueva categoria
 
             foreach ($subcategories as $subcategoryName) {
-                Subcategory::create([
+                Subcategory::create([ //Crea una subcategoria asociada a la categria
                     'name' => $subcategoryName,
                     'category_id' => $category->id,
                 ]);

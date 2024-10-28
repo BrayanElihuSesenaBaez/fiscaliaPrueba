@@ -4,7 +4,7 @@
     <div class="container">
         <h2 class="mt-5">Crear Usuario</h2>
 
-        <form method="POST" action="{{ route('users.store') }}">
+        <form method="POST" action="{{ route('users.store') }}"> <!-- Formulario que envía datos al metodo store del controlador de users -->
             @csrf
             <div class="form-group">
                 <label for="name">Nombre</label>
@@ -21,7 +21,7 @@
 
             <div class="form-group">
                 <label>Roles</label>
-                <table class="table">
+                <table class="table"> <!-- Tabla listada con los roles disponibles -->
                     <thead>
                     <tr>
                         <th>Rol</th>
@@ -29,11 +29,11 @@
                     </tr>
                     </thead>
                     <tbody>
-                    @foreach($roles as $role)
+                    @foreach($roles as $role) <!-- Muestra los roles disponibles -->
                         <tr>
-                            <td>{{ $role->name }}</td>
+                            <td>{{ $role->name }}</td> <!-- Muestra el nombre del rol -->
                             <td>
-                                <input type="checkbox" name="roles[]" value="{{ $role->name }}">
+                                <input type="checkbox" name="roles[]" value="{{ $role->name }}"> <!-- Checkbox para seleccionar el rol -->
                             </td>
                         </tr>
                     @endforeach

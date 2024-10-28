@@ -10,20 +10,23 @@ use App\Models\User; // Importar el modelo User
 
 class RolesAndPermissionsSeeder extends Seeder{
 
+    //Crea roles y permisos en la base de datos
+
     public function run(): void{
 
-        // Definir permisos
+        // Se definen los permisos disponibles
         $permissions = ['create reports', 'edit reports', 'delete reports', 'view reports'];
-        // Crear y asignar permisos
+
+        // Se crean y se asignan los permisos a la base de datos
         foreach ($permissions as $permission) {
-            Permission::firstOrCreate(['name' => $permission]);
+            Permission::firstOrCreate(['name' => $permission]);//Se crea el permiso si no existe
         }
 
-        // Crear rol de Fiscal General y asignar permisos
+        // Se crea el rol de 'Fiscal General' y se asignan sus permisos
         $fiscalGeneral = Role::firstOrCreate(['name' => 'Fiscal General']);
-        $fiscalGeneral->syncPermissions($permissions);
+        $fiscalGeneral->syncPermissions($permissions); //Se asignan todos los permisos al rol
 
-        // Crear fiscales especializados
+        // Roles para fiscales especializados
         $fiscalesEspecializados = [
             'Fiscal Homicidio',
             'Fiscal Lesiones',
@@ -34,6 +37,7 @@ class RolesAndPermissionsSeeder extends Seeder{
             'Fiscal Delitos Patrimoniales',
         ];
 
+        //Creacion de roles para fiscales especializados
         foreach ($fiscalesEspecializados as $fiscalRole) {
             Role::firstOrCreate(['name' => $fiscalRole]);
         }
@@ -43,7 +47,7 @@ class RolesAndPermissionsSeeder extends Seeder{
             ['email' => 'admin@example.com'], // Busca el usuario por su email
             [
                 'name' => 'Admin',
-                'password' => bcrypt('password'), // Cambia la contraseña si es necesario
+                'password' => bcrypt('password'), // Contraseña encriptada para el usuario
             ]
         );
 

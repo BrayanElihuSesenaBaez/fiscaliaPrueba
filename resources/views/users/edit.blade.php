@@ -4,20 +4,22 @@
     <div class="container">
         <h2 class="mt-5">Editar Usuario</h2>
 
-        <form method="POST" action="{{ route('users.update', $user->id) }}">
+        <form method="POST" action="{{ route('users.update', $user->id) }}"> <!-- Formulario que envía datos al metodo update del controlador de users -->
             @csrf
             @method('PUT')
             <div class="form-group">
                 <label for="name">Nombre</label>
-                <input type="text" class="form-control" name="name" id="name" value="{{ $user->name }}" required>
+                <input type="text" class="form-control" name="name" id="name" value="{{ $user->name }}" required> <!-- Campo de entrada para el nombre con valor pre-cargado -->
             </div>
+
             <div class="form-group">
                 <label for="email">Correo Electrónico</label>
-                <input type="email" class="form-control" name="email" id="email" value="{{ $user->email }}" required>
+                <input type="email" class="form-control" name="email" id="email" value="{{ $user->email }}" required> <!-- Campo de entrada para el correo con valor pre-cargado -->
             </div>
+
             <div class="form-group">
                 <label for="password">Contraseña (dejar en blanco para no cambiar)</label>
-                <input type="password" class="form-control" name="password" id="password">
+                <input type="password" class="form-control" name="password" id="password"> <!-- Campo de entrada para la contraseña con valor pre-cargado -->
             </div>
 
             <div class="form-group">

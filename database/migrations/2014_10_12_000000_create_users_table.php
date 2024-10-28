@@ -13,7 +13,7 @@ return new class extends Migration {
             $table->string('secondLastName ');
             $table->string('email')->unique();
             $table->string('password');
-            $table->foreignId('idRol')->constrained('rol');
+            $table->foreignId('idRol')->constrained('rol'); //Clave foranea que hace referencia a la tabla rol
             $table->string('cargo');
             $table->string('remember_token')->nullable();
             $table->timestamps();

@@ -8,25 +8,23 @@ use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller{
-    // Mustra una lista de usuarios existentes en la base de datos
+
+    // Muestra una lista de usuarios existentes en la base de datos
     public function index(){
-        $users = User::all(); //Lógica para obtener todos los usuarios
+        $users = User::all(); //Obtiene todos os usuarios
         return view('users.index', compact('users'));
     }
 
     // Muestra el formulario para crear un nuevo usuario
     public function create(){
-        //Donde el unico rol que puede crear usuarios es quien tiene el rol de Fiscal General
+        //Obtiene todos los roles excepto el rol de 'Fiscal General'
         $roles = Role::where('name', '!=', 'Fiscal General')->get();
-        //Retorna a la vista users.create
         return view('users.create', compact('roles'));
     }
 
-    // Guardar el nuevo usuario en la base de datos
-
-    // Metodo para crear un nuevo usuario
+    // Metodo para crear y guardar a un nuevo usuario en la base de datos
     public function store(Request $request){
-        //Campos donde se crea el usuario
+        //Validación de datos de entrada
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
@@ -34,13 +32,14 @@ class UserController extends Controller{
             'roles' => 'array', // Acepta un array de roles
         ]);
 
-        //Crea al usuario
+        //Crea al nuevo usuario
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
 
+        //Sincroniza los roles si se especifican
         if ($request->roles) {
             $user->syncRoles($request->roles);
         }
@@ -49,15 +48,14 @@ class UserController extends Controller{
     }
 
 
-    // Mostrar formulario para editar un usuario existente
+    // Muestra el formulario para editar un usuario existente
     public function edit($id){
         $user = User::findOrFail($id);
-        $roles = Role::all();
+        $roles = Role::all();//Obtiene todos los roles
         return view('users.edit', compact('user', 'roles'));
     }
 
-    // Actualizar el usuario en la base de datos
-    // Metodo para crear o actualizar un usuario
+    // Actualiza un usuario en la base de datos
     public function update(Request $request, $id){
         // Validación de los datos del formulario
         $request->validate([
@@ -66,13 +64,13 @@ class UserController extends Controller{
             'roles' => 'required|array',
         ]);
 
-        // Encuentra al usuario
+        // Encuentra al usuario por ID
         $user = User::findOrFail($id);
         $user->name = $request->input('name');
         $user->email = $request->input('email');
         $user->save();
 
-        // Sincroniza a los usuarios mediante sus roles usando los nombres en vez de IDs
+        // Sincroniza los roles del usuario
         $roles = $request->input('roles'); // Arreglo con los nombres de los roles
         $user->syncRoles($roles);
 
@@ -80,7 +78,7 @@ class UserController extends Controller{
     }
 
 
-    // Eliminar un usuario
+    // Elimina un usuario
     public function destroy($id){
         $user = User::findOrFail($id);
         $user->delete();
@@ -88,6 +86,7 @@ class UserController extends Controller{
         return redirect()->route('users.index')->with('success', 'Usuario eliminado exitosamente.');
     }
 
+    //Constructor para aplicar middleware (Es un constructor que en este caso solo los usuarios con este rol pueden acceder a los metodos del controlador)
     public function __construct(){
         $this->middleware('role:Fiscal General'); // Solo el Fiscal General puede acceder a estas acciones
     }
