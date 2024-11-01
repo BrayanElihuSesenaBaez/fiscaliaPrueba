@@ -18,7 +18,20 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-    ];
+
+        //Campos nuevos agregados
+       'firstLastName',
+        'secondLastName',
+        'curp',
+        'birthDate',
+        'phone',
+        'state',
+        'municipality',
+        'colony',
+        'code_postal',
+        'street',
+        'rfc',
+        ];
 
     protected $hidden = [
         'password',

@@ -15,8 +15,9 @@
         <table class="table table-user-list"> <!-- Tabla para listar los usuarios existentes-->
             <thead>
             <tr>
-                <th>ID</th>
                 <th>Nombre</th>
+                <th>Apellido Paterno</th>
+                <th>Apellido Materno</th>
                 <th>Correo Electrónico</th>
                 <th>Rol</th>
                 <th>Acciones</th>
@@ -25,12 +26,13 @@
             <tbody>
             @foreach($users as $user)
                 <tr>
-                    <td>{{ $user->id }}</td>
                     <td>{{ $user->name }}</td>
+                    <td>{{ $user->firstLastName }}</td>
+                    <td>{{ $user->secondLastName }}</td>
                     <td>{{ $user->email }}</td>
                     <td>{{ implode(', ', $user->getRoleNames()->toArray()) }}</td> <!-- Muestra los roles del usuario -->
                     <td>
-                        <a href="{{ route('users.edit', $user->id) }}" class="btn btn-warning btn-sm">Editar</a>
+                        <a href="{{ route('users.edit', $user->id) }}" class="btn btn-warning btn-sm me-2">Editar</a>
                         <form action="{{ route('users.destroy', $user->id) }}" method="POST" style="display:inline;">
                             @csrf
                             @method('DELETE')

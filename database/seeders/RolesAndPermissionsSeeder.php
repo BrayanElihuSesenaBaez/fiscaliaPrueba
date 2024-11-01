@@ -27,14 +27,15 @@ class RolesAndPermissionsSeeder extends Seeder{
         $fiscalGeneral->syncPermissions($permissions); //Se asignan todos los permisos al rol
 
         // Roles para fiscales especializados
+        //Se corrigieron los nombres de las especialidades
         $fiscalesEspecializados = [
-            'Fiscal Homicidio',
-            'Fiscal Lesiones',
-            'Fiscal Feminicidio',
-            'Fiscal Secuestro',
-            'Fiscal Robo',
-            'Fiscal Delitos Sexuales',
-            'Fiscal Delitos Patrimoniales',
+            'Fiscal Especializado en Delitos que atentan contra la vida y la integridad corporal',
+            'Fiscal Especializado en Delitos que atentan contra la libertad personal',
+            'Fiscal Especializado en Delitos que atentan contra la libertad y la seguridad sexual',
+            'Fiscal Especializado en Delitos que atentan contra el patrimonio',
+            'Fiscal Especializado en Delitos que atentan contra la familia',
+            'Fiscal Especializado en Delitos que atentan contra la sociedad',
+            'Fiscal Especializado en Delitos que atentan contra otros bienes jurídicos afectados (del fuero común)',
         ];
 
         //Creacion de roles para fiscales especializados
@@ -46,8 +47,21 @@ class RolesAndPermissionsSeeder extends Seeder{
         $user = User::firstOrCreate(
             ['email' => 'admin@example.com'], // Busca el usuario por su email
             [
-                'name' => 'Admin',
+                'name' => 'Carlos',
                 'password' => bcrypt('password'), // Contraseña encriptada para el usuario
+
+                //Nuevos campos agregados
+                'firstLastName' => 'García',
+                'secondLastName' => 'Rodríguez',
+                'curp' => 'GARC840623HDFRRL09',
+                'birthDate' => '1984-06-23',
+                'phone' => '5555555555',
+                'state' => 'Veracruz',
+                'municipality' => 'Xalapa',
+                'colony' => 'Rafael Lucio',
+                'code_postal' =>'91110',
+                'street' => 'Rafael Aguirre Cinta',
+                'rfc' => 'GARC840623H1',
             ]
         );
 

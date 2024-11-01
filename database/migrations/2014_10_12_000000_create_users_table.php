@@ -9,11 +9,22 @@ return new class extends Migration {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('firstLastName');
-            $table->string('secondLastName ');
             $table->string('email')->unique();
             $table->string('password');
-            $table->foreignId('idRol')->constrained('rol'); //Clave foranea que hace referencia a la tabla rol
+
+            //Campos nuevos agregados
+            $table->string('firstLastName', 25)->nullable();
+            $table->string('secondLastName', 25)->nullable();
+            $table->string('curp', 18)->nullable();
+            $table->date('birthDate')->nullable();
+            $table->string('phone', 15)->nullable();
+            $table->string('state')->nullable();
+            $table->string('municipality')->nullable();
+            $table->string('colony')->nullable();
+            $table->string('code_postal', 5)->nullable();
+            $table->string('street')->nullable();
+            $table->string('rfc', 13)->unique()->nullable();
+            $table->foreignId('idRol')->constrained('roles');
             $table->string('cargo');
             $table->string('remember_token')->nullable();
             $table->timestamps();

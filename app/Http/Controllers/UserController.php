@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller{
 
+    public function __construct(){
+        $this->middleware('role:Fiscal General'); // Solo el Fiscal General puede acceder a estas acciones
+    }
+
     // Muestra una lista de usuarios existentes en la base de datos
     public function index(){
         $users = User::all(); //Obtiene todos os usuarios
@@ -25,23 +29,35 @@ class UserController extends Controller{
     // Metodo para crear y guardar a un nuevo usuario en la base de datos
     public function store(Request $request){
         //Validación de datos de entrada
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:30',
+            'email' => 'required|string|email|max:50|unique:users',
             'password' => 'required|string|min:8',
+            //Campos nuevos agregados
+            'firstLastName' => 'required|string|max:30',
+            'secondLastName' => 'required|string|max:30',
+            'curp' => 'required|string|size:18',
+            'birthDate' => 'required|date',
+            'phone' => 'required|string|min:10|max:15',
+            'state' => 'required|string|max:255',
+            'municipality' => 'required|string|max:255',
+            'colony' => 'required|string|max:255',
+            'code_postal' => 'required|digits:5',
+            'street' => 'required|string|max:255',
+            'rfc' => 'required|string|regex:/^[A-Z]{3,4}\d{6}[A-Z0-9]{2,3}$/|min:12|max:13',
+            //
             'roles' => 'array', // Acepta un array de roles
         ]);
 
-        //Crea al nuevo usuario
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
+        //Simplificacion de code
+        $user = new User();
+        $user->fill($validatedData);
+        $user->password = Hash::make($validatedData['password']);
+        $user->save();
 
-        //Sincroniza los roles si se especifican
-        if ($request->roles) {
-            $user->syncRoles($request->roles);
+        // Asignación de roles
+        if ($request->has('roles')) {
+            $user->syncRoles($request->input('roles'));
         }
         //Muestra mensaje de confirmacion
         return redirect()->route('users.index')->with('success', 'Usuario creado exitosamente.');
@@ -56,25 +72,44 @@ class UserController extends Controller{
     }
 
     // Actualiza un usuario en la base de datos
-    public function update(Request $request, $id){
+    public function update(Request $request, User $user){
         // Validación de los datos del formulario
-        $request->validate([
+        $validatedData = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'roles' => 'required|array',
+
+            //Campos nuevos agregados
+            'firstLastName' => 'required|string|max:255',
+            'secondLastName' => 'required|string|max:255',
+            'curp' => 'required|string|size:18',
+            'birthDate' => 'required|date',
+            'phone' => 'required|string|max:15',
+            'state' => 'required|string|max:255',
+            'municipality' => 'required|string|max:255',
+            'colony' => 'required|string|max:255',
+            'code_postal' => 'required|digits:5',
+            'street' => 'required|string|max:255',
+            'rfc' => 'required|string|regex:/^[A-Z]{3,4}\d{6}[A-Z0-9]{2,3}$/|min:12|max:13',
+
+
+
         ]);
 
-        // Encuentra al usuario por ID
-        $user = User::findOrFail($id);
-        $user->name = $request->input('name');
-        $user->email = $request->input('email');
-        $user->save();
+        // Cambie code
+        if ($request->filled('password')) {
+            $validatedData['password'] = Hash::make($validatedData['password']);
+        } else {
+            unset($validatedData['password']);
+        }
 
-        // Sincroniza los roles del usuario
-        $roles = $request->input('roles'); // Arreglo con los nombres de los roles
-        $user->syncRoles($roles);
+        $user->update($validatedData);
 
-        return redirect()->route('users.index')->with('success', 'Usuario actualizado correctamente.');
+        if (isset($validatedData['roles'])) {
+            $user->syncRoles($validatedData['roles']);
+        }
+
+        return redirect()->route('users.index')->with('success', 'Usuario actualizado exitosamente.');
     }
 
 
@@ -84,10 +119,5 @@ class UserController extends Controller{
         $user->delete();
 
         return redirect()->route('users.index')->with('success', 'Usuario eliminado exitosamente.');
-    }
-
-    //Constructor para aplicar middleware (Es un constructor que en este caso solo los usuarios con este rol pueden acceder a los metodos del controlador)
-    public function __construct(){
-        $this->middleware('role:Fiscal General'); // Solo el Fiscal General puede acceder a estas acciones
     }
 }

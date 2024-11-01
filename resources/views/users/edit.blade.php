@@ -9,17 +9,73 @@
             @method('PUT')
             <div class="form-group">
                 <label for="name">Nombre</label>
-                <input type="text" class="form-control" name="name" id="name" value="{{ $user->name }}" required> <!-- Campo de entrada para el nombre con valor pre-cargado -->
+                <input type="text" class="form-control" name="name" id="name" value="{{ $user->name }}" required  placeholder="Ingrese su nombre"  maxlength="30"> <!-- Campo de entrada para el nombre con valor pre-cargado -->
+            </div>
+
+            <!-- -->
+            <div class="form-group">
+                <label for="firstLastName">Apellido Paterno</label>
+                <input type="text" class="form-control" name="firstLastName" id="firstLastName" value="{{ $user->firstLastName }}" required placeholder="Ingrese su apellido paterno"  maxlength="30">
+            </div>
+
+            <div class="form-group">
+                <label for="secondLastName">Apellido Materno</label>
+                <input type="text" class="form-control" name="secondLastName" id="secondLastName" value="{{ $user->secondLastName }}" required placeholder="Ingrese su apellido materno"  maxlength="30">
+            </div>
+
+            <div class="form-group">
+                <label for="birthDate">Fecha de Nacimiento</label>
+                <input type="date" class="form-control" name="birthDate" id="birthDate" value="{{ $user->birthDate }}" required >
+            </div>
+
+            <div class="form-group">
+                <label for="curp">CURP</label>
+                <input type="text" class="form-control" name="curp" id="curp" value="{{ $user->curp }}" required placeholder="Ingrese su CURP" pattern=".{18}" title="El CURP debe tener exactamente 18 caracteres"  maxlength="18">
+            </div>
+
+            <div class="form-group">
+                <label for="rfc">RFC</label>
+                <input type="text" class="form-control" name="rfc" id="rfc" value="{{ $user->rfc }}" required placeholder="Ingrese su RFC" pattern="^[A-Z]{3,4}\d{6}[A-Z0-9]{2,3}$" title="El RFC debe tener 12 o 13 caracteres" maxlength="13">
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Teléfono</label>
+                <input type="number" class="form-control" name="phone" id="phone" value="{{ $user->phone }}" required placeholder="Ingrese su teléfono" pattern="\d{10,15}" title="El teléfono debe tener entre 10 y 15 dígitos" maxlength="15">
+            </div>
+
+            <div class="form-group">
+                <label for="state">Estado</label>
+                <input type="text" class="form-control" name="state" id="state" value="{{ $user->state }}" required placeholder="Ingrese su estado" maxlength="100">
+            </div>
+
+            <div class="form-group">
+                <label for="municipality">Municipio</label>
+                <input type="text" class="form-control" name="municipality" id="municipality" value="{{ $user->municipality }}" required placeholder="Ingrese su municipio" maxlength="100">
+            </div>
+
+            <div class="form-group">
+                <label for="colony">Colonia</label>
+                <input type="text" class="form-control" name="colony" id="colony" value="{{ $user->colony }}" required placeholder="Ingrese su colonia" maxlength="100">
+            </div>
+
+            <div class="form-group">
+                <label for="code_postal">Código Postal</label>
+                <input type="number" class="form-control" name="code_postal" id="code_postal" value="{{ $user->code_postal }}" required placeholder="Ingrese su código postal" pattern="\d{5}" title="El código postal debe tener exactamente 5 dígitos" maxlength="5">
+            </div>
+
+            <div class="form-group">
+                <label for="street">Calle</label>
+                <input type="text" class="form-control" name="street" id="street" value="{{ $user->street }}" required placeholder="Ingrese su calle" maxlength="100">
             </div>
 
             <div class="form-group">
                 <label for="email">Correo Electrónico</label>
-                <input type="email" class="form-control" name="email" id="email" value="{{ $user->email }}" required> <!-- Campo de entrada para el correo con valor pre-cargado -->
+                <input type="email" class="form-control" name="email" id="email" value="{{ $user->email }}" required placeholder="Ingrese su correo electrónico" maxlength="100">
             </div>
 
             <div class="form-group">
                 <label for="password">Contraseña (dejar en blanco para no cambiar)</label>
-                <input type="password" class="form-control" name="password" id="password"> <!-- Campo de entrada para la contraseña con valor pre-cargado -->
+                <input type="password" class="form-control" name="password" id="password" placeholder="Ingrese una nueva contraseña (opcional)" >
             </div>
 
             <div class="form-group">

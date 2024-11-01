@@ -6,11 +6,8 @@ use App\Http\Controllers\PdfController;
 use App\Http\Controllers\SubcategoryController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LogoutController;
 use Illuminate\Support\Facades\Auth;
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
 use App\Http\Controllers\HomeController;
 
 // Muestra la ruta al formulario de incio de sesión
@@ -26,48 +23,23 @@ Route::get('/home', [HomeController::class, 'index'])->name('home');
 Route::resource('users', UserController::class);
 
 // Rutas protegidas por el middleware de autenticación y el rol "Fiscal General"
+//Simplificacion de code
 Route::middleware(['auth', 'role:Fiscal General'])->group(function () {
-        // Muestra una pantalla de inicio para el Fiscal General
-        Route::get('/dashboard', function () {
-            return view('dashboard');//Se manda a una vista llamada "dashboard.blade.php" siendo la pantalla de inicio del usuario con rol "Fiscal General"
-        })->name('dashboard');
 
-        // Pantalla de inicio para el Fiscal General
-        Route::get('/dashboard', [ReportController::class, 'index'])->name('dashboard');
+    // Página de inicio para el "Fiscal General"
+    Route::get('/dashboard', [ReportController::class, 'index'])->name('dashboard');
 
-        // Ruta de una lista de los usuarios existentes
-        Route::get('/users', [UserController::class, 'index'])->name('users.index');
+    // Rutas de usuarios usando el controlador UserController
+    Route::resource('users', UserController::class);
 
-        // Ruta para crear un nuevo usuario
-        Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
-
-        // Ruta para almacenar un nuevo usuario
-        Route::post('/users', [UserController::class, 'store'])->name('users.store');
-
-        // Ruta para mostrar el formulario para editar de un usuario existente
-        Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
-
-        // Ruta para actualizar un usuario existente
-        Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
-
-        // Ruta para eliminar un usuario
-        Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
-
-        // Página de creación de reportes
-        Route::get('/reports/create', [ReportController::class, 'create'])->name('reports.create');
-
-        // Ruta para buscar reportes
-         Route::get('/reports/search', [ReportController::class, 'search'])->name('reports.search');
-
-        // Rutas para ver, editar, actualizar y eliminar reportes
-        Route::get('/reports/{id}/edit', [ReportController::class, 'edit'])->name('reports.edit');
-        Route::put('/reports/{id}', [ReportController::class, 'update'])->name('reports.update');
-        Route::delete('/reports/{id}', [ReportController::class, 'destroy'])->name('reports.destroy');
-
-        Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
-        Route::get('/reports/search', [ReportController::class, 'search'])->name('reports.search');
-
-
+    // Rutas para reportes, solo accesibles por "Fiscal General"
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('/reports/create', [ReportController::class, 'create'])->name('reports.create');
+    Route::post('/reports', [ReportController::class, 'store'])->name('reports.store');
+    Route::get('/reports/{id}/edit', [ReportController::class, 'edit'])->name('reports.edit');
+    Route::put('/reports/{id}', [ReportController::class, 'update'])->name('reports.update');
+    Route::delete('/reports/{id}', [ReportController::class, 'destroy'])->name('reports.destroy');
+    Route::get('/reports/search', [ReportController::class, 'search'])->name('reports.search');
 });
 
 // Rutas protegidas por el middleware de autenticación para los demas roles (excepto 'Fiscal General')
