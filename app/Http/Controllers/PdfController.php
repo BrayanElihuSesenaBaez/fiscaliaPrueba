@@ -2,17 +2,43 @@
 
 namespace App\Http\Controllers;
 
-use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Http\Request;
 use App\Models\Report;
+use App\Models\PdfLogo;
+use Illuminate\Support\Facades\Storage;
+use TCPDF;
 
 class PdfController extends Controller
 {
-    public function generatePdf($reportId){
+    public function generatePdf($reportId)
+    {
         // Obtiene el reporte completo incluyendo las relaciones de categoria y subcategoria
         $report = Report::with(['category', 'subcategory'])->findOrFail($reportId);
 
-        //Datos necesarios para la vista del PDF
+        $logos = PdfLogo::all();
+        $logosDetails = $logos->map(function ($logo) {
+            $logo->absolute_path = public_path('storage/' . $logo->file_path);
+            return $logo;
+        });
+
+
+        dd($logosDetails);
+
+        foreach ($logosDetails as $logo) {
+            if (!empty($logo->absolute_path)) {
+                if (!file_exists($logo->absolute_path)) {
+                    dd("Archivo no encontrado: " . $logo->absolute_path);
+                }
+            }
+        }
+
+        // Crear una instancia de TCPDF
+        $pdf = new TCPDF();
+
+        // Configuración inicial del PDF
+        $pdf->SetMargins(15, 20, 15); // Márgenes
+        $pdf->AddPage();
+
+        // Datos necesarios para la vista del PDF
         $data = [
             'report_date' => $report->report_date,
             'expedient_number' => $report->expedient_number,
@@ -28,10 +54,12 @@ class PdfController extends Controller
             'curp' => $report->curp,
             'phone' => $report->phone,
             'email' => $report->email,
-            'state' => $report->state,
-            'municipality' => $report->municipality,
-            'colony' => $report->colony,
-            'code_postal' => $report->code_postal,
+            'residence_state' => $report->residence_state,
+            'residence_municipality' => $report->residence_municipality,
+            'residence_code_postal' => $report->residence_code_postal,
+            'residence_colony' => $report->residence_colony,
+            'residence_city' => $report->residence_city,
+            'incident_city' => $report->incident_city,
             'street' => $report->street,
             'ext_number' => $report->ext_number,
             'int_number' => $report->int_number,
@@ -44,22 +72,51 @@ class PdfController extends Controller
             'incident_ext_number' => $report->incident_ext_number,
             'incident_int_number' => $report->incident_int_number,
             'suffered_damage' => $report->suffered_damage,
-            'witnesses' => $report->witnesses,
+            'has_witnesses' => $report->has_witnesses ? 'Sí' : 'No',
+            'witnesses' => is_array($report->witnesses) ? $report->witnesses : [],
             'emergency_call' => $report->emergency_call,
             'emergency_number' => $report->emergency_number,
             'detailed_account' => $report->detailed_account,
             'category_name' => $report->category->name,
             'subcategory_name' => $report->subcategory->name,
-
+            'logosDetails' => $logosDetails,
         ];
 
-        // Genera el PDF a partir de la vista 'pdf.view' y los datos
-        $pdf = Pdf::loadView('pdf.view', $data);
+        $pdf = new \TCPDF();
+        $pdf->AddPage();
 
-        //Descarga el PDF con el nombre basado en el numero de expediente del reporte
-        return $pdf->download('reporte_' . $report->expedient_number . '.pdf');
+        $html = view('pdf.view', $data)->render();
+        dd($html); // Inspecciona el HTML antes de escribirlo al PDF
+
+        $pdf->writeHTML($html);
+
+        foreach ($logosDetails as $logo) {
+            if (!empty($logo->absolute_path)) {
+                \Log::info('Procesando logotipo', [
+                    'ruta' => $logo->absolute_path,
+                    'coordenadas' => [
+                        'x' => $logo->position_x,
+                        'y' => $logo->position_y,
+                        'width' => $logo->width,
+                        'height' => $logo->height,
+                    ],
+                    'existe' => file_exists($logo->absolute_path) ? 'Sí' : 'No',
+                ]);
+
+                $pdf->Image(
+                    $logo->absolute_path,
+                    $logo->position_x,
+                    $logo->position_y,
+                    $logo->width,
+                    $logo->height
+                );
+            }
+        }
+
+        return $pdf->Output('reporte_' . $report->expedient_number . '.pdf', 'D');
     }
 }
+
 
 
 

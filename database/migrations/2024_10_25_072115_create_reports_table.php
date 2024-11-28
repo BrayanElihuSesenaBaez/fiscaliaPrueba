@@ -28,9 +28,13 @@ return new class extends Migration {
             $table->string('email');
             $table->string('state');
             $table->string('municipality');
-            $table->string('colony');
-            $table->string('code_postal');
             $table->string('street');
+
+            $table->string('residence_code_postal');
+            $table->string('residence_colony');
+            $table->string('residence_city')->nullable(); // Ciudad es opcional
+
+
             $table->string('ext_number');
             $table->string('int_number')->nullable();
 
@@ -41,6 +45,10 @@ return new class extends Migration {
             $table->string('incident_colony');
             $table->string('incident_code_postal');
             $table->string('incident_street');
+
+            // Campos para la incidencia
+            $table->string('incident_city')->nullable(); // Ciudad del incidente
+
             $table->string('incident_ext_number');
             $table->string('incident_int_number')->nullable();
 
@@ -60,6 +68,7 @@ return new class extends Migration {
             $table->foreign('subcategory_id')->references('id')->on('subcategories');//Establece relación con tabla 'subcategories'
             $table->timestamps();
         });
+
     }
 
     public function down(){

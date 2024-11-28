@@ -9,18 +9,21 @@
         "barryvdh/laravel-dompdf": "^3.0",
         "barryvdh/laravel-snappy": "*",
         "brick/math": "^0.11",
+        "doctrine/dbal": "^3.9",
         "guzzlehttp/guzzle": "^7.2",
         "laravel-lang/lang": "*",
         "laravel/framework": "^10.10",
         "laravel/sanctum": "^3.3",
         "laravel/tinker": "^2.8",
+        "maatwebsite/excel": "^3.1",
         "s-ichikawa/laravel-sendgrid-driver": "*",
-        "spatie/laravel-permission": "^6.9"
+        "spatie/laravel-permission": "^6.9",
+        "tecnickcom/tcpdf": "^6.7"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",
         "laravel/pint": "^1.0",
-        "laravel/sail": "^1.31",
+        "laravel/sail": "^1.38",
         "mockery/mockery": "^1.4.4",
         "nunomaduro/collision": "^7.0",
         "phpunit/phpunit": "^10.1",

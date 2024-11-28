@@ -71,6 +71,8 @@
             background-color: #f2f2f2; /* Color de fondo de la tabla */
         }
 
+        /*  */
+
     </style>
 
 </head>
@@ -132,20 +134,26 @@
                     <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
                         <div class="position-sticky">
                             <ul class="nav flex-column">
-                                <!-- Muestra las opciones para Fiscal General -->
-                                @if(Auth::user()->hasRole('Fiscal General'))
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="{{ route('users.index') }}">
-                                            <span data-feather="users"></span>
-                                            Lista de Usuarios
-                                        </a>
-                                    </li>
-                                @endif
+                                <!-- Enlace: Lista de usuarios -->
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ route('users.index') }}">
+                                        <span data-feather="users"></span>
+                                        Lista de Usuarios
+                                    </a>
+                                </li>
 
-                                <!-- Opciones disponibles para todos los fiscales -->
+                                <!-- Enlace: Gestión de logotipos -->
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ route('pdf_design.index') }}">
+                                        <span data-feather="image"></span>
+                                        Gestión de Logotipos para el PDF
+                                    </a>
+                                </li>
+
+                                <!-- Enlace: Crear reporte -->
                                 <li class="nav-item">
                                     <a class="nav-link" href="{{ route('reports.create') }}">
-                                        <span data-feather="file-text"></span>
+                                        <span data-feather="file-plus"></span>
                                         Crear Reporte
                                     </a>
                                 </li>

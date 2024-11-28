@@ -25,10 +25,18 @@ class Report extends Model{
         'curp',
         'phone',
         'email',
+
         'state',
         'municipality',
-        'colony',
-        'code_postal',
+
+        'residence_state',
+        'residence_municipality',
+
+        'residence_code_postal',
+        'residence_colony',
+        'residence_city',
+        'incident_city',
+
         'street',
         'ext_number',
         'int_number',
@@ -42,7 +50,11 @@ class Report extends Model{
         'incident_ext_number',
         'incident_int_number',
         'suffered_damage',
+
         'witnesses',
+        'has_witnesses',
+
+
         'emergency_call',
         'emergency_number',
         'detailed_account',
@@ -53,15 +65,20 @@ class Report extends Model{
         'subcategory_name',
         'pdf_path'
     ];
-
+    protected $casts = [
+        'witnesses' => 'array',
+    ];
     //Relación con el modelo Category
     public function category(){
         return $this->belongsTo(Category::class);
     }
-
     //Relación con el modelo Subcategory
     public function subcategory(){
         return $this->belongsTo(Subcategory::class);
+    }
+    // En el archivo Report.php
+    public function witnesses() {
+        return $this->hasMany(Witness::class);
     }
 }
 

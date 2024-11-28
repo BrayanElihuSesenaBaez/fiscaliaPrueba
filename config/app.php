@@ -70,7 +70,7 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    'timezone' => 'America/Mexico_City', // Se cambio a la hora de México
 
     /*
     |--------------------------------------------------------------------------

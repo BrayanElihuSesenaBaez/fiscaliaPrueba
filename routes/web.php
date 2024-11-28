@@ -9,6 +9,8 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\LocationController;
+use App\Http\Controllers\PdfDesignController;
 
 // Muestra la ruta al formulario de incio de sesión
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
@@ -40,6 +42,55 @@ Route::middleware(['auth', 'role:Fiscal General'])->group(function () {
     Route::put('/reports/{id}', [ReportController::class, 'update'])->name('reports.update');
     Route::delete('/reports/{id}', [ReportController::class, 'destroy'])->name('reports.destroy');
     Route::get('/reports/search', [ReportController::class, 'search'])->name('reports.search');
+
+    // Ruta para la vista previa del diseño de logotipos en PDF
+    Route::get('/pdf-design/preview', [PdfController::class, 'designPreview'])->name('pdf_design.preview');
+
+    // Ruta para guardar los cambios de los logotipos
+    Route::post('/pdf-design/save-logo-changes', [PdfController::class, 'saveLogoChanges'])->name('pdf_design.saveLogoChanges');
+
+
+    // Conf del logo PDF
+    Route::get('/pdf_design', [PdfDesignController::class, 'index'])->name('pdf_design.index');
+    Route::match(['post'], '/pdf-design', [PdfDesignController::class, 'store'])->name('pdf_design.store');
+
+    Route::delete('/pdf-design/{id}', [PdfDesignController::class, 'destroy'])->name('pdf_design.destroy');
+
+    Route::get('/pdf-design', [PdfDesignController::class, 'index'])->name('pdf_design.index');
+
+
+    // Ruta para seleccionar los logotipos y guardarlos en la sesión
+    Route::post('/pdf-design/select', [PdfDesignController::class, 'selectLogos'])->name('pdf_design.selectLogos');
+
+    // Ruta para generar la vista previa del diseño en PDF
+    Route::post('/pdf-design/preview', [PdfDesignController::class, 'generateDesignPreview'])->name('pdf_design.generateDesignPreview');
+
+    // Ruta para generar el PDF final
+    Route::get('/pdf-design/generate', [PdfDesignController::class, 'generate'])->name('pdf_design.generate');
+    // Ruta para finalizar el diseño y generar el PDF final
+    Route::get('/pdf-design/finalize', [PdfDesignController::class, 'finalize'])->name('pdf_design.finalize');
+
+    Route::get('/pdf/design/preview', [PdfDesignController::class, 'preview'])->name('pdf_design.preview');
+
+
+    Route::get('/pdf/design/previewPdf', [PdfDesignController::class, 'previewPdf'])->name('pdf_design.previewPdf   ');
+    Route::post('/pdf-design/save', [PdfDesignController::class, 'saveDesign'])->name('pdf_design.save');
+
+    Route::post('/pdf_design/generate-preview', [PdfDesignController::class, 'generateDesignPreview'])->name('pdf_design.generateDesignPreview');
+
+    Route::post('/pdf_design/generatePdf', [PdfDesignController::class, 'generatePdf'])->name('pdf_design.generatePdf');
+
+    Route::post('/pdf_design/showPdfPreview', [PdfDesignController::class, 'showPdfPreview'])->name('pdf_design.showPdfPreview');
+
+    Route::post('/pdf-design/save-logo-changes', [PdfDesignController::class, 'saveLogoChanges']);
+
+
+    Route::get('/pdf/design', [PdfDesignController::class, 'index'])->name('pdf.design');
+
+    Route::post('/pdf/design/save', [PdfDesignController::class, 'store'])->name('pdf.design.save');
+
+    Route::get('/report/{id}/pdf', [ReportController::class, 'generatePdf'])->name('report.pdf');
+
 });
 
 // Rutas protegidas por el middleware de autenticación para los demas roles (excepto 'Fiscal General')
@@ -60,15 +111,20 @@ Route::middleware(['auth'])->group(function () {
 });
 
 
-//Route::get('/', function () {
-//    return view('welcome');
-//})->name('welcome');
-
 // Rutas de las subcategorías de acuerdo a su categoria
 Route::get('/subcategories/{categoryId}', [SubcategoryController::class, 'getSubcategories']);
 
+//Rutas de los Estados y Municipios de México
+Route::get('/get-municipalities/{stateId}', [LocationController::class, 'getMunicipalities']);
+
+//Rutas de Codigo Postal, Colonias y Localidades
+Route::get('/get-zipcodes/{municipalityId}', [LocationController::class, 'getZipCodes']);
+Route::get('/get-colonies/{zipCode}', [LocationController::class, 'getColonies']);
+
 // Generación de PDF
 Route::get('/generate-pdf', [PdfController::class, 'generatePdf']);
+Route::get('/generate-pdf/{reportId}', [PdfController::class, 'generatePdf']);
+
 
 
 

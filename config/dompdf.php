@@ -2,6 +2,8 @@
 
 return [
 
+    'debug' => true,
+
     /*
     |--------------------------------------------------------------------------
     | Settings
@@ -64,7 +66,7 @@ return [
          * The temporary directory is required to download remote images and when
          * using the PDFLib back end.
          */
-        'temp_dir' => sys_get_temp_dir(),
+        'temp_dir' => storage_path('app/temp'), // Directorio temporal para archivos locales
 
         /**
          * ==== IMPORTANT ====
@@ -78,7 +80,7 @@ return [
          * direct class use like:
          * $dompdf = new DOMPDF();  $dompdf->load_html($htmldata); $dompdf->render(); $pdfdata = $dompdf->output();
          */
-        'chroot' => realpath(base_path()),
+        'chroot' => realpath(storage_path('app')),
 
         /**
          * Protocol whitelist
@@ -104,7 +106,7 @@ return [
         /**
          * @var string
          */
-        'log_output_file' => null,
+        'log_output_file' => storage_path('logs/dompdf.log'),
 
         /**
          * Whether to enable font subsetting or not.
