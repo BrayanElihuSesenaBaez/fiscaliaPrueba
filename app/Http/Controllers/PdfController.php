@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Report;
 use App\Models\PdfLogo;
 use Illuminate\Support\Facades\Storage;
+use Barryvdh\DomPDF\Facade\Pdf;
 use TCPDF;
+use Illuminate\Support\Facades\Auth;
 
 class PdfController extends Controller
 {
@@ -14,29 +16,14 @@ class PdfController extends Controller
         // Obtiene el reporte completo incluyendo las relaciones de categoria y subcategoria
         $report = Report::with(['category', 'subcategory'])->findOrFail($reportId);
 
-        $logos = PdfLogo::all();
-        $logosDetails = $logos->map(function ($logo) {
-            $logo->absolute_path = public_path('storage/' . $logo->file_path);
-            return $logo;
-        });
+        // Obtener los logos para el encabezado y pie de página
+        $headerLogos = PdfLogo::whereIn('id', $report->pdfDesign->header_logos ?? [])->get();
+        $footerLogos = PdfLogo::whereIn('id', $report->pdfDesign->footer_logos ?? [])->get();
 
-
-        dd($logosDetails);
-
-        foreach ($logosDetails as $logo) {
-            if (!empty($logo->absolute_path)) {
-                if (!file_exists($logo->absolute_path)) {
-                    dd("Archivo no encontrado: " . $logo->absolute_path);
-                }
-            }
-        }
-
-        // Crear una instancia de TCPDF
-        $pdf = new TCPDF();
-
-        // Configuración inicial del PDF
-        $pdf->SetMargins(15, 20, 15); // Márgenes
-        $pdf->AddPage();
+        $user = auth()->user(); // Obtiene el usuario autenticado
+        $name = $user->name;
+        $email = $user->email;
+        $role = $user->roles->first()->name ?? 'No asignado';
 
         // Datos necesarios para la vista del PDF
         $data = [
@@ -79,41 +66,18 @@ class PdfController extends Controller
             'detailed_account' => $report->detailed_account,
             'category_name' => $report->category->name,
             'subcategory_name' => $report->subcategory->name,
-            'logosDetails' => $logosDetails,
+            'headerLogos' => $headerLogos,  // Pasar los logos del encabezado
+            'footerLogos' => $footerLogos,  // Pasar los logos del pie de página
+
+            'user_name' => $name,
+            'user_email' => $email,
+            'user_role' => $role,
         ];
 
-        $pdf = new \TCPDF();
-        $pdf->AddPage();
+        // Carga la vista y genera el PDF
+        $pdf = Pdf::loadView('pdf.view', $data);
 
-        $html = view('pdf.view', $data)->render();
-        dd($html); // Inspecciona el HTML antes de escribirlo al PDF
-
-        $pdf->writeHTML($html);
-
-        foreach ($logosDetails as $logo) {
-            if (!empty($logo->absolute_path)) {
-                \Log::info('Procesando logotipo', [
-                    'ruta' => $logo->absolute_path,
-                    'coordenadas' => [
-                        'x' => $logo->position_x,
-                        'y' => $logo->position_y,
-                        'width' => $logo->width,
-                        'height' => $logo->height,
-                    ],
-                    'existe' => file_exists($logo->absolute_path) ? 'Sí' : 'No',
-                ]);
-
-                $pdf->Image(
-                    $logo->absolute_path,
-                    $logo->position_x,
-                    $logo->position_y,
-                    $logo->width,
-                    $logo->height
-                );
-            }
-        }
-
-        return $pdf->Output('reporte_' . $report->expedient_number . '.pdf', 'D');
+        return $pdf->download('reporte_' . $report->expedient_number . '.pdf');
     }
 }
 

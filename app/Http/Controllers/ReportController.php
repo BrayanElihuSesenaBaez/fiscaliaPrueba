@@ -54,6 +54,7 @@ class ReportController extends Controller{
     // Guarda el reporte en la base de datos y generar el PDF
     public function store(Request $request){
         // Valida los campos del formulario
+
         $request->validate([
             'report_date' => 'required|date',
             'last_name' => 'required|string',
@@ -256,6 +257,7 @@ class ReportController extends Controller{
             'detailed_account' => $report->detailed_account,
             'category_name' => $report->category->name,
             'subcategory_name' => $report->subcategory->name,
+
         ];
 
 

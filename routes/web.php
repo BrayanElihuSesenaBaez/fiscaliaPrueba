@@ -51,43 +51,16 @@ Route::middleware(['auth', 'role:Fiscal General'])->group(function () {
 
 
     // Conf del logo PDF
-    Route::get('/pdf_design', [PdfDesignController::class, 'index'])->name('pdf_design.index');
-    Route::match(['post'], '/pdf-design', [PdfDesignController::class, 'store'])->name('pdf_design.store');
-
-    Route::delete('/pdf-design/{id}', [PdfDesignController::class, 'destroy'])->name('pdf_design.destroy');
-
     Route::get('/pdf-design', [PdfDesignController::class, 'index'])->name('pdf_design.index');
-
+    Route::post('/pdf-design', [PdfDesignController::class, 'upload'])->name('pdfdesign.upload');
+    Route::post('/pdf-design/save', [PdfDesignController::class, 'save'])->name('pdfdesign.save');
+    Route::get('/pdf-design/generate', [PdfDesignController::class, 'generatePdf'])->name('pdfdesign.generate');
+    Route::delete('/pdf-design/{id}', [PdfDesignController::class, 'destroy'])->name('pdf_design.destroy');
+    Route::get('/pdf-design/image/{id}', [PdfDesignController::class, 'showImage'])->name('pdf_design.showImage');
+    Route::get('pdfdesign/preview', [PdfDesignController::class, 'preview'])->name('pdfdesign.preview');
+    Route::post('/pdfdesign/update-selection', [PdfDesignController::class, 'updateSelection'])->name('pdfdesign.updateSelection');
 
     // Ruta para seleccionar los logotipos y guardarlos en la sesión
-    Route::post('/pdf-design/select', [PdfDesignController::class, 'selectLogos'])->name('pdf_design.selectLogos');
-
-    // Ruta para generar la vista previa del diseño en PDF
-    Route::post('/pdf-design/preview', [PdfDesignController::class, 'generateDesignPreview'])->name('pdf_design.generateDesignPreview');
-
-    // Ruta para generar el PDF final
-    Route::get('/pdf-design/generate', [PdfDesignController::class, 'generate'])->name('pdf_design.generate');
-    // Ruta para finalizar el diseño y generar el PDF final
-    Route::get('/pdf-design/finalize', [PdfDesignController::class, 'finalize'])->name('pdf_design.finalize');
-
-    Route::get('/pdf/design/preview', [PdfDesignController::class, 'preview'])->name('pdf_design.preview');
-
-
-    Route::get('/pdf/design/previewPdf', [PdfDesignController::class, 'previewPdf'])->name('pdf_design.previewPdf   ');
-    Route::post('/pdf-design/save', [PdfDesignController::class, 'saveDesign'])->name('pdf_design.save');
-
-    Route::post('/pdf_design/generate-preview', [PdfDesignController::class, 'generateDesignPreview'])->name('pdf_design.generateDesignPreview');
-
-    Route::post('/pdf_design/generatePdf', [PdfDesignController::class, 'generatePdf'])->name('pdf_design.generatePdf');
-
-    Route::post('/pdf_design/showPdfPreview', [PdfDesignController::class, 'showPdfPreview'])->name('pdf_design.showPdfPreview');
-
-    Route::post('/pdf-design/save-logo-changes', [PdfDesignController::class, 'saveLogoChanges']);
-
-
-    Route::get('/pdf/design', [PdfDesignController::class, 'index'])->name('pdf.design');
-
-    Route::post('/pdf/design/save', [PdfDesignController::class, 'store'])->name('pdf.design.save');
 
     Route::get('/report/{id}/pdf', [ReportController::class, 'generatePdf'])->name('report.pdf');
 
@@ -127,6 +100,11 @@ Route::get('/generate-pdf/{reportId}', [PdfController::class, 'generatePdf']);
 
 
 
+Route::get('/test-image', function () {
+    $img = Image::canvas(300, 200, '#ff0000'); // Imagen roja de 300x200
+    $img->save(public_path('test_image.jpg'));
+    return 'Imagen creada: public/test_image.jpg';
+});
 
 
 

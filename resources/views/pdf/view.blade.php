@@ -27,25 +27,39 @@
             padding: 5px;
             text-align: left;
         }
+        .logo {
+            position: absolute;
+            max-width: 100%;
+            max-height: 100%;
+        }
     </style>
 </head>
 <body>
 {{-- Encabezado --}}
 <div class="header">
-    @foreach ($logosDetails as $logo)
-        @if (!empty($logo->absolute_path))
-            <img src="file://{{ $logo->absolute_path }}"
-                 alt="{{ $logo->name }}"
-                 style="position: absolute;
-                    top: {{ $logo->position_y ?? 0 }}px;
-                    left: {{ $logo->position_x ?? 0 }}px;
-                    width: {{ $logo->width ?? 50 }}px;
-                    height: {{ $logo->height ?? 50 }}px;
-                    object-fit: contain;">
-        @endif
-    @endforeach
-
+    <img src="{{ url('storage/zacatecaslogo.png') }}" alt="Logo de Zacatecas">
 </div>
+
+    <!-- Sección: Datos del usuario que llenó el formulario -->
+<!-- Sección: Datos del usuario -->
+<div class="section">
+    <div class="section-title">Sección: Datos del Fiscal</div>
+    <table>
+        <tr>
+            <th>Nombre Completo</th>
+            <td>{{ Auth::user()->name }} {{ Auth::user()->firstLastName }} {{ Auth::user()->secondLastName }}</td>
+        </tr>
+        <tr>
+            <th>Correo Electrónico</th>
+            <td>{{ Auth::user()->email }}</td>
+        </tr>
+        <tr>
+            <th>Puesto</th>
+            <td>{{ Auth::user()->role ?? 'Puesto no disponible' }}</td>
+        </tr>
+    </table>
+</div>
+
 
 <!-- Sección 1: Datos del Registro -->
     <div class="section">
@@ -162,14 +176,6 @@
     @endif
 
 <!-- Pie de página con logotipos -->
-<div class="footer">
-    @foreach ($logosDetails as $logo)
-        @if ($logo->location === 'footer' && !empty($logo->absolute_path))
-            <img src="{{ $logo->absolute_path }}" alt="{{ $logo->name }}"
-                 style="width: {{ $logo->width }}px; height: {{ $logo->height }}px;">
-        @endif
-    @endforeach
-</div>
 
 </body>
 </html>

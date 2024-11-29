@@ -75,7 +75,21 @@
 
                 <div class="form-group">
                     <label for="birth_place">Lugar de Nacimiento:</label>
-                    <input type="text" id="birth_place" name="birth_place" class="form-control" required>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <select id="birth_state" class="form-control" required>
+                                <option value="" disabled selected>Seleccione un estado</option>
+                                @foreach ($states as $state)
+                                    <option value="{{ $state->id }}">{{ $state->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <select id="birth_municipality" name="birth_place" class="form-control" required>
+                                <option value="" disabled selected>Seleccione un municipio</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
 
 
@@ -649,6 +663,33 @@
                 // Asignamos la fecha ajustada al campo
                 reportDateInput.value = formattedDate;
             }
+        });
+    </script>
+    <script>
+        $(document).ready(function() {
+            // Función para cargar municipios
+            function loadMunicipalities(stateId) {
+                $.ajax({
+                    url: '/get-municipalities/' + stateId,
+                    type: 'GET',
+                    success: function(data) {
+                        $('#birth_municipality').empty().append('<option value="" disabled selected>Seleccione un municipio</option>');
+                        $.each(data, function(index, municipality) {
+                            $('#birth_municipality').append('<option value="' + municipality.id + '">' + municipality.name + '</option>');
+                        });
+                    }
+                });
+            }
+
+            // Cambiar municipios según el estado seleccionado
+            $('#birth_state').change(function() {
+                const stateId = $(this).val();
+                if (stateId) {
+                    loadMunicipalities(stateId);
+                } else {
+                    $('#birth_municipality').empty().append('<option value="" disabled selected>Seleccione un municipio</option>');
+                }
+            });
         });
     </script>
 

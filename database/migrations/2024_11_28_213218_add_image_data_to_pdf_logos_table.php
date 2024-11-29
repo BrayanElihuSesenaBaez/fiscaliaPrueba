@@ -4,22 +4,20 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
-    public function up() {
+
+    public function up(): void
+    {
         Schema::table('pdf_logos', function (Blueprint $table) {
-            $table->string('location')->default('pending')->change(); // Usa 'string' en lugar de 'enum'
+            $table->binary('image_data')->nullable(); // Columna para los datos binarios
         });
     }
 
-    public function down() {
+    public function down(): void
+    {
         Schema::table('pdf_logos', function (Blueprint $table) {
-            $table->string('location')->default('header')->change(); // También cambia a 'string' en el down
+            $table->dropColumn('image_data');
         });
     }
-
 };

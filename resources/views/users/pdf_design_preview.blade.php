@@ -86,131 +86,212 @@
 <h1>Diseño PDF Interactivo</h1>
 
 {{-- Vista previa del PDF --}}
-<h3>Encabezado:</h3>
 <div class="pdf-preview" id="pdfPreview">
     {{-- Límite del encabezado --}}
     <div class="header-limit"></div>
     {{-- Límite del pie de página --}}
     <div class="footer-limit"></div>
 
-    @foreach($logosDetails as $logo)
-        @if($logo->location == 'header')
-            <div class="logo" id="logo-{{ $logo->id }}"
-                 style="width: {{ $logo->width }}px; height: {{ $logo->height }}px;
-                    top: {{ min($logo->position_y, 120 - $logo->height) }}px;
-                    left: {{ $logo->alignment === 'center' ? 'calc(50% - '.($logo->width / 2).'px)' :
-                            ($logo->alignment === 'right' ? 'calc(100% - '.$logo->width.'px)' : $logo->position_x.'px') }};">
-                <img src="{{ Storage::url($logo->file_path) }}" alt="{{ $logo->name }}"
-                     style="width: 100%; height: 100%; object-fit: contain;">
-            </div>
-        @endif
-    @endforeach
-
-    @foreach($logosDetails as $logo)
-        @if($logo->location == 'footer')
-            <div class="logo" id="logo-{{ $logo->id }}"
-                 style="width: {{ $logo->width }}px; height: {{ $logo->height }}px;
-                    bottom: {{ min($logo->position_y, 80) }}px;
-                    left: {{ $logo->alignment === 'center' ? 'calc(50% - '.($logo->width / 2).'px)' :
-                            ($logo->alignment === 'right' ? 'calc(100% - '.$logo->width.'px)' : $logo->position_x.'px') }};">
-                <img src="{{ Storage::url($logo->file_path) }}" alt="{{ $logo->name }}"
-                     style="width: 100%; height: 100%; object-fit: contain;">
+    @foreach ($logos as $logo)
+        @if (in_array($logo->id, $pdfDesign->header_logos ?? []) || in_array($logo->id, $pdfDesign->footer_logos ?? []))
+            {{-- Mostrar logo solo si fue seleccionado para encabezado o pie de página --}}
+            <div
+                class="logo"
+                id="logo-{{ $logo->id }}"
+                data-section="{{ in_array($logo->id, $pdfDesign->header_logos ?? []) ? 'header' : 'footer' }}"
+                style="top: {{ $logo->position_y ?? 10 }}px;
+                       left: {{ $logo->position_x ?? 10 }}px;
+                       width: {{ $logo->width ?? 50 }}px;
+                       height: {{ $logo->height ?? 50 }}px;">
+                <img src="data:{{ $logo->mime_type }};base64,{{ base64_encode($logo->image_data) }}" alt="Logo">
             </div>
         @endif
     @endforeach
 </div>
 
+{{-- Botón para guardar cambios --}}
 <button id="save-changes">Guardar Cambios</button>
+<button id="save-selection">Guardar Selección de Logos</button>
 <div id="notification" class="notification"></div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Configuración de interact.js para mover y redimensionar los logotipos en la vista previa
+        const headerLimit = { top: 0, bottom: 120, left: 0, right: 800 }; // Límites del encabezado
+        const footerLimit = { top: 1020, bottom: 1100, left: 0, right: 800 }; // Límites del pie de página
+
         interact('.logo')
             .draggable({
                 listeners: {
-                    // Evento de movimiento
                     move(event) {
                         const target = event.target;
                         const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
                         const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
 
-                        target.style.transform = `translate(${x}px, ${y}px)`;
-                        target.setAttribute('data-x', x);
-                        target.setAttribute('data-y', y);
+                        // Verificar si el logo está dentro de los límites de la sección correspondiente
+                        const section = target.dataset.section;
+
+                        let limit = {};
+                        if (section === 'header') {
+                            limit = headerLimit;
+                        } else if (section === 'footer') {
+                            limit = footerLimit;
+                        }
+
+                        const newX = Math.min(Math.max(x, limit.left), limit.right - target.offsetWidth);
+                        const newY = Math.min(Math.max(y, limit.top), limit.bottom - target.offsetHeight);
+
+                        target.style.transform = `translate(${newX}px, ${newY}px)`; // Usar backticks
+                        target.setAttribute('data-x', newX);
+                        target.setAttribute('data-y', newY);
                     }
                 }
             })
             .resizable({
                 edges: { left: true, right: true, bottom: true, top: true },
                 listeners: {
-                    // Evento de redimensionamiento
                     move(event) {
                         const target = event.target;
-                        const width = parseFloat(target.style.width || target.offsetWidth) + event.deltaRect.width;
-                        const height = parseFloat(target.style.height || target.offsetHeight) + event.deltaRect.height;
+                        const width = parseFloat(target.style.width) + event.deltaRect.width;
+                        const height = parseFloat(target.style.height) + event.deltaRect.height;
 
-                        target.style.width = `${width}px`;
-                        target.style.height = `${height}px`;
+                        target.style.width = `${width}px`; // Usar backticks
+                        target.style.height = `${height}px`; // Usar backticks
 
                         const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.deltaRect.left;
                         const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.deltaRect.top;
 
-                        target.style.transform = `translate(${x}px, ${y}px)`;
+                        target.style.transform = `translate(${x}px, ${y}px)`; // Usar backticks
                         target.setAttribute('data-x', x);
                         target.setAttribute('data-y', y);
                     }
                 }
             });
 
-        // Guardar los cambios realizados
+        function isWithinLimits(logo, limit) {
+            const x = parseFloat(logo.getAttribute('data-x')) || 0;
+            const y = parseFloat(logo.getAttribute('data-y')) || 0;
+            const width = parseFloat(logo.style.width);
+            const height = parseFloat(logo.style.height);
+
+            return (
+                x >= limit.left &&
+                y >= limit.top &&
+                x + width <= limit.right &&
+                y + height <= limit.bottom
+            );
+        }
+
         document.getElementById('save-changes').addEventListener('click', function () {
             const logos = [];
+            let isValid = true;
+            let message = '';
 
             document.querySelectorAll('.logo').forEach(logo => {
                 const id = logo.id.replace('logo-', '');
                 const x = parseFloat(logo.getAttribute('data-x')) || 0;
                 const y = parseFloat(logo.getAttribute('data-y')) || 0;
-                const width = parseFloat(logo.style.width || logo.offsetWidth);
-                const height = parseFloat(logo.style.height || logo.offsetHeight);
+                const width = parseFloat(logo.style.width);
+                const height = parseFloat(logo.style.height);
+                const section = logo.dataset.section || 'default';
+
+                if (section === 'header' && !isWithinLimits(logo, headerLimit)) {
+                    isValid = false;
+                    message = 'Uno o más logotipos en el encabezado están fuera de los límites permitidos.';
+                } else if (section === 'footer' && !isWithinLimits(logo, footerLimit)) {
+                    isValid = false;
+                    message = 'Uno o más logotipos en el pie de página están fuera de los límites permitidos.';
+                }
 
                 logos.push({
-                    id,
+                    id: id,
                     position_x: x,
                     position_y: y,
-                    width,
-                    height
+                    width: width,
+                    height: height,
+                    section: section
                 });
             });
 
-            // Enviar los cambios al servidor
-            fetch('/pdf-design/save-logo-changes', {
+            const notification = document.getElementById('notification');
+            if (!isValid) {
+                notification.textContent = message;
+                notification.style.color = 'red';
+                return;
+            }
+
+            fetch('/pdf-design/save', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
-                body: JSON.stringify({ logos })
+                body: JSON.stringify({ logos: logos })
             })
                 .then(response => response.json())
                 .then(data => {
-                    const notification = document.getElementById('notification');
-                    if (data.status === 'success') {
-                        notification.textContent = 'Logotipos guardados correctamente.';
+                    if (data.success) {
+                        notification.textContent = data.success;  // Mostrar mensaje de éxito
                         notification.style.color = 'green';
                     } else {
-                        notification.textContent = data.message;
+                        notification.textContent = 'Hubo un error al guardar los cambios.';
                         notification.style.color = 'red';
                     }
                 })
                 .catch(error => {
+                    notification.textContent = 'Hubo un error al guardar los cambios.';
+                    notification.style.color = 'red';
                     console.error('Error:', error);
                 });
         });
+
+        // Verifica la existencia del botón antes de agregar el event listener
+        const saveSelectionButton = document.getElementById('save-selection');
+        if (saveSelectionButton) {
+            saveSelectionButton.addEventListener('click', function () {
+                const selectedHeaderLogos = [];
+                const selectedFooterLogos = [];
+
+                document.querySelectorAll('.logo[data-section="header"]').forEach(logo => {
+                    selectedHeaderLogos.push(logo.id.replace('logo-', ''));
+                });
+
+                document.querySelectorAll('.logo[data-section="footer"]').forEach(logo => {
+                    selectedFooterLogos.push(logo.id.replace('logo-', ''));
+                });
+
+                fetch('/pdf-design/update-selection', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        header_logos: selectedHeaderLogos,
+                        footer_logos: selectedFooterLogos
+                    })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        const notification = document.getElementById('notification');
+                        if (data.success) {
+                            notification.textContent = 'Selección de logos guardada exitosamente.';
+                            notification.style.color = 'green';
+                        } else {
+                            notification.textContent = 'Hubo un error al guardar la selección de logos.';
+                            notification.style.color = 'red';
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+            });
+        }
     });
+
 </script>
+
 </body>
 </html>
+
+
 
 
 

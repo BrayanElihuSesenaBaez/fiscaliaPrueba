@@ -12,6 +12,7 @@
     },
     "dependencies": {
         "@interactjs/interactjs": "^1.10.27",
+        "cropperjs": "^1.6.2",
         "interactjs": "^1.10.27"
     }
 }
