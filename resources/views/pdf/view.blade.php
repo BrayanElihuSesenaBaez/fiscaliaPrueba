@@ -7,41 +7,88 @@
         body {
             font-family: Arial, sans-serif;
             font-size: 12px;
-        }
-        .header, .footer {
-            text-align: center;
+            width: 612px;
+            height: 792px;
+            margin: 0;
+            padding: 20px;
+            flex-direction: column;
+            align-items: center;
         }
         .section {
             margin-bottom: 20px;
         }
+
         .section-title {
             font-weight: bold;
             margin-bottom: 10px;
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
         }
+
         th, td {
             border: 1px solid #ddd;
             padding: 5px;
             text-align: left;
         }
+
         .logo {
             position: absolute;
             max-width: 100%;
             max-height: 100%;
+            cursor: grab;
+            border: 1px dashed #aaa;
+            background-color: rgba(255, 255, 255, 0.8);
         }
+
+        button {
+            margin-top: 20px;
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50pt;
+        }
+
     </style>
+
 </head>
 <body>
 {{-- Encabezado --}}
 <div class="header">
-    <img src="{{ url('storage/zacatecaslogo.png') }}" alt="Logo de Zacatecas">
+    @foreach ($logos as $logo)
+        @if ($logo->section == 'header')
+        <div
+            class="logo"
+            style="top: {{ $logo->position_y ?? 0 }}px;
+                        left: {{ $logo->position_x ?? 0 }}px;
+                        width: {{ $logo->width ?? 50 }}px;
+                        height: {{ $logo->height ?? 50 }}px;">
+            <img src="data:{{ $logo->mime_type }};base64,{{ base64_encode($logo->image_data) }}" alt="Logo">
+        </div>
+        @endif
+    @endforeach
 </div>
 
-    <!-- Sección: Datos del usuario que llenó el formulario -->
-<!-- Sección: Datos del usuario -->
 <div class="section">
     <div class="section-title">Sección: Datos del Fiscal</div>
     <table>
@@ -127,14 +174,12 @@
             <tr><th>¿Sufrió algún daño?</th><td>{{ $suffered_damage ?? 'No disponible' }}</td></tr>
             <tr><th>¿Hubo testigos?</th><td>{{ $has_witnesses ?? 'No disponible' }}</td></tr>
 
-            <!-- Mostrar número de testigos solo si hubo testigos -->
             @if(($has_witnesses ?? 'No') === 'Sí' && is_array($witnesses))
                 <tr><th>Número de testigos</th><td>{{ count($witnesses) }}</td></tr>
             @endif
 
             <tr><th>¿Llamó a un número de emergencia?</th><td>{{ $emergency_call ?? 'No disponible' }}</td></tr>
 
-            <!-- Muestra el campo en el PDF si se llamó a un número de emergencia -->
             @if(($emergency_call ?? 'No') === 'Sí')
                 <tr><th>Número de emergencia</th><td>{{ $emergency_number ?? 'Número no disponible' }}</td></tr>
             @endif
@@ -165,7 +210,7 @@
         <ul>
             @foreach($witnesses ?? [] as $index => $witness)
                 <li>
-                    <strong>Testigo {{ $index + 1 }}:</strong><br>
+                    <strong>Testigo {{ $index + 0 }}:</strong><br>
                     Nombre: {{ $witness['full_name'] ?? 'Nombre no disponible' }}<br>
                     Teléfono: {{ $witness['phone'] ?? 'Teléfono no disponible' }}<br>
                     Parentesco: {{ $witness['relationship'] ?? 'Parentesco no disponible' }}<br>
@@ -175,8 +220,21 @@
         </ul>
     @endif
 
-<!-- Pie de página con logotipos -->
-
+{{-- Pie de página --}}
+<div class="footer">
+    @foreach ($logos as $logo)
+        @if ($logo->section == 'footer')
+        <div
+            class="logo"
+            style="top: {{ $logo->position_y ?? 0 }}px;
+                        left: {{ $logo->position_x ?? 0 }}px;
+                        width: {{ $logo->width ?? 50 }}px;
+                        height: {{ $logo->height ?? 50 }}px;">
+            <img src="data:image/png;base64,{{ base64_encode($logo->image_data) }}" alt="Logo">
+        </div>
+        @endif
+    @endforeach
+</div>
 </body>
 </html>
 

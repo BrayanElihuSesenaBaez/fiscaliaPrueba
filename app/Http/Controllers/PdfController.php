@@ -4,28 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\Report;
 use App\Models\PdfLogo;
-use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
-use TCPDF;
-use Illuminate\Support\Facades\Auth;
 
 class PdfController extends Controller
 {
-    public function generatePdf($reportId)
-    {
-        // Obtiene el reporte completo incluyendo las relaciones de categoria y subcategoria
+    public function generatePdf($reportId){
         $report = Report::with(['category', 'subcategory'])->findOrFail($reportId);
 
-        // Obtener los logos para el encabezado y pie de página
-        $headerLogos = PdfLogo::whereIn('id', $report->pdfDesign->header_logos ?? [])->get();
-        $footerLogos = PdfLogo::whereIn('id', $report->pdfDesign->footer_logos ?? [])->get();
+        $logos = PdfLogo::where('is_active', 1)->get();
 
-        $user = auth()->user(); // Obtiene el usuario autenticado
-        $name = $user->name;
-        $email = $user->email;
-        $role = $user->roles->first()->name ?? 'No asignado';
-
-        // Datos necesarios para la vista del PDF
         $data = [
             'report_date' => $report->report_date,
             'expedient_number' => $report->expedient_number,
@@ -66,19 +53,42 @@ class PdfController extends Controller
             'detailed_account' => $report->detailed_account,
             'category_name' => $report->category->name,
             'subcategory_name' => $report->subcategory->name,
-            'headerLogos' => $headerLogos,  // Pasar los logos del encabezado
-            'footerLogos' => $footerLogos,  // Pasar los logos del pie de página
 
-            'user_name' => $name,
-            'user_email' => $email,
-            'user_role' => $role,
+            'logos' => $logos,
         ];
 
-        // Carga la vista y genera el PDF
         $pdf = Pdf::loadView('pdf.view', $data);
 
         return $pdf->download('reporte_' . $report->expedient_number . '.pdf');
     }
+
+    public function viewPdf($id)
+    {
+        $report = Report::findOrFail($id);
+
+        if (!$report->pdf_blob) {
+            return redirect()->route('dashboard')->withErrors('El PDF no está disponible.');
+        }
+
+        return response($report->pdf_blob)
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'inline; filename="reporte_' . $report->id . '.pdf"');
+    }
+
+    public function downloadPdf(Report $report)
+    {
+        if ($report->pdf_blob) {
+            return response()->streamDownload(function () use ($report) {
+                echo $report->pdf_blob;
+            }, 'reporte_' . $report->expedient_number . '.pdf', [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="reporte_' . $report->expedient_number . '.pdf"'
+            ]);
+        } else {
+            return redirect()->route('dashboard')->with('error', 'No se ha generado el PDF para este reporte.');
+        }
+    }
+
 }
 
 

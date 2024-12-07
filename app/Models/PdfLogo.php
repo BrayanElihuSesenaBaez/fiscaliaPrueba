@@ -22,5 +22,6 @@ class PdfLogo extends Model
         'location',
         'section',
         'image_data',
+        'mime_type'
     ];
 }

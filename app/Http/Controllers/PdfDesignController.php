@@ -2,146 +2,248 @@
 
 namespace App\Http\Controllers;
 
-use Barryvdh\DomPDF\Facade\Pdf;
+
 use Illuminate\Http\Request;
-use Barryvdh\Snappy\Facades\SnappyPdf;
 use App\Models\PdfLogo;
 use Illuminate\Support\Facades\Storage;
 use App\Models\PdfDesign;
-use Intervention\Image\Facades\Image;
+
 
 class PdfDesignController extends Controller{
 
-    public function index()
-    {
-        // Obtener los logos almacenados en la base de datos
+    public function index(){
         $logos = PdfLogo::all();
         // Retornar la vista con los datos
         return view('users.pdf_design', compact('logos'));
     }
 
-
-    // Código del controlador para guardar el logo
     public function upload(Request $request)
     {
         $request->validate([
             'logo' => 'required|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        // Obtener la imagen original
         $image = $request->file('logo');
 
-        // Redimensionar la imagen a un tamaño fijo (por ejemplo, 300px de ancho)
-        $imageResized = Image::make($image)->resize(300, null, function ($constraint) {
-            $constraint->aspectRatio(); // Mantener la relación de aspecto
-            $constraint->upsize(); // Evitar que la imagen se agrande si es pequeña
-        });
+        $originalImage = imagecreatefromstring(file_get_contents($image));
+        $originalWidth = imagesx($originalImage);
+        $originalHeight = imagesy($originalImage);
 
-        // Convertir la imagen redimensionada a datos binarios
-        $imageData = $imageResized->encode(); // Codificar la imagen como binario
+        $maxWidth = 100;
+        $maxHeight = 75;
 
-        // Guardar la imagen redimensionada en la base de datos
-        $logo = PdfLogo::create([
+        $aspectRatio = $originalWidth / $originalHeight;
+        if ($aspectRatio > 1) {
+            $newWidth = $maxWidth;
+            $newHeight = $maxWidth / $aspectRatio;
+        } else {
+            $newWidth = $maxHeight * $aspectRatio;
+            $newHeight = $maxHeight;
+        }
+
+        $resizedImage = imagecreatetruecolor($newWidth, $newHeight);
+
+        if ($image->getClientOriginalExtension() === 'png') {
+            imagesavealpha($resizedImage, true);
+            $transparent = imagecolorallocatealpha($resizedImage, 0, 0, 0, 127);
+            imagefill($resizedImage, 0, 0, $transparent);
+        }
+
+        imagecopyresampled(
+            $resizedImage,
+            $originalImage,
+            0, 0, 0, 0,
+            $newWidth, $newHeight,
+            $originalWidth, $originalHeight
+        );
+
+        ob_start();
+        imagepng($resizedImage);
+        $imageData = ob_get_clean();
+
+        imagedestroy($originalImage);
+        imagedestroy($resizedImage);
+
+        PdfLogo::create([
             'name' => $image->getClientOriginalName(),
-            'image_data' => $imageData, // Guardar la imagen como binario
+            'image_data' => $imageData,
+            'mime_type' => 'image/png',
         ]);
 
-        return back()->with('success', 'Logo subido exitosamente');
+        return redirect()->route('pdf_design.index')->with('success', 'Logo subido exitosamente');
     }
+
+
+
 
     public function showImage($id)
     {
         $logo = PdfLogo::findOrFail($id);
 
-        // Detectar dinámicamente el tipo MIME desde los datos binarios
-        $mimeType = $this->getMimeTypeFromBinary($logo->image_data);
+        $image = imagecreatefromstring($logo->image_data);
+        $newWidth = 100;
+        $newHeight = 75;
 
-        // Crear una respuesta con los datos binarios y el tipo MIME
-        return response($logo->image_data, 200)
-            ->header('Content-Type', $mimeType);
+        $resizedImage = imagecreatetruecolor($newWidth, $newHeight);
+
+        if ($logo->mime_type === 'image/png') {
+            imagesavealpha($resizedImage, true);
+            $transparent = imagecolorallocatealpha($resizedImage, 0, 0, 0, 127);
+            imagefill($resizedImage, 0, 0, $transparent);
+        }
+
+        imagecopyresampled(
+            $resizedImage,
+            $image,
+            0, 0, 0, 0,
+            $newWidth, $newHeight,
+            imagesx($image),
+            imagesy($image)
+        );
+
+        ob_start();
+        if ($logo->mime_type === 'image/png') {
+            imagepng($resizedImage);
+        } else {
+            imagejpeg($resizedImage);
+        }
+        $imageData = ob_get_clean();
+
+        imagedestroy($image);
+        imagedestroy($resizedImage);
+
+        return response($imageData, 200)
+            ->header('Content-Type', $logo->mime_type);
     }
 
 
-    // Metodo para obtener el tipo MIME según la extensión del archivo
-    public function getMimeTypeFromBinary($imageData)
-    {
+    public function getMimeTypeFromBinary($imageData){
         $finfo = new \finfo(FILEINFO_MIME_TYPE);
-        $mimeType = $finfo->buffer($imageData);
-        return $mimeType;
+        return $finfo->buffer($imageData) ?: null;
     }
-
-
-
 
     public function save(Request $request)
     {
-        // Guardar los logos y sus posiciones en la base de datos
-        // Asumiendo que ya estás procesando los logos
+        $headerLimit = [
+            'top' => 0,
+            'bottom' => 113,
+            'left' => 0,
+            'right' => 794,
+        ];
 
-        // Actualizar los logos en la base de datos
+        $footerLimit = [
+            'top' => 1048,
+            'bottom' => 1123,
+            'left' => 0,
+            'right' => 794,
+        ];
+
         foreach ($request->logos as $logoData) {
             $logo = PdfLogo::find($logoData['id']);
             if ($logo) {
+                $x = $logoData['position_x'];
+                $y = $logoData['position_y'];
+
+                if ($logoData['section'] === 'header') {
+                    $y = max($headerLimit['top'], min($y, $headerLimit['bottom'] - $logoData['height']));
+                } elseif ($logoData['section'] === 'footer') {
+                    $y = max($footerLimit['top'], min($y, $footerLimit['bottom'] - $logoData['height']));
+                }
+
                 $logo->update([
-                    'position_x' => $logoData['position_x'],
-                    'position_y' => $logoData['position_y'],
+                    'position_x' => $x,
+                    'position_y' => $y,
                     'width' => $logoData['width'],
                     'height' => $logoData['height'],
+                    'section' => $logoData['section'],
                 ]);
             }
         }
+            if (isset($request->header_logos) || isset($request->footer_logos)) {
+                $pdfDesign = PdfDesign::firstOrCreate(['id' => 1]);
+                $pdfDesign->header_logos = $request->input('header_logos', []);
+                $pdfDesign->footer_logos = $request->input('footer_logos', []);
+                $pdfDesign->save();
+            }
 
-        return response()->json(['success' => 'Los cambios han sido guardados exitosamente.']);
+            return response()->json(['success' => 'Los cambios han sido guardados exitosamente.']);
     }
 
     public function destroy($id)
     {
-        // Buscar el logo por ID
         $logo = PdfLogo::findOrFail($id);
 
-        // Verificar si file_path tiene un valor antes de intentar eliminar el archivo
         if ($logo->file_path && Storage::disk('public')->exists($logo->file_path)) {
-            // Eliminar el archivo físico del almacenamiento
             Storage::disk('public')->delete($logo->file_path);
         }
 
-        // Eliminar el registro de la base de datos
         $logo->delete();
 
-        // Redirigir con mensaje de éxito
         return redirect()->route('pdf_design.index')->with('success', 'Logo eliminado exitosamente.');
     }
 
     public function updateSelection(Request $request)
     {
-        $request->validate([
-            'header_logos' => 'array|nullable',
-            'footer_logos' => 'array|nullable',
+        $validated = $request->validate([
+            'header_logos' => 'nullable|array',
+            'footer_logos' => 'nullable|array',
+            'header_logos.*' => 'exists:pdf_logos,id',
+            'footer_logos.*' => 'exists:pdf_logos,id',
         ]);
 
-        // Asegúrate de que los datos se reciban correctamente
-        $headerLogos = $request->input('header_logos', []);
-        $footerLogos = $request->input('footer_logos', []);
+        $pdfDesign = PdfDesign::firstOrCreate([
+            'id' => 1,
+        ]);
 
-        // Suponiendo que se va a guardar el diseño PDF con los logos seleccionados
-        $pdfDesign = PdfDesign::first();
-        if ($pdfDesign) {
-            $pdfDesign->update([
-                'header_logos' => $headerLogos,
-                'footer_logos' => $footerLogos,
-            ]);
+        $pdfDesign->header_logos = $request->input('header_logos', []);
+        $pdfDesign->footer_logos = $request->input('footer_logos', []);
+        $pdfDesign->save();
+
+        if ($request->has('header_logos')) {
+            foreach ($request->input('header_logos') as $logoId) {
+                $logo = PdfLogo::find($logoId);
+                if ($logo) {
+                    $logo->location = 'encabezado';
+                    $logo->section = 'header';
+                    $logo->save();
+                }
+            }
         }
 
-        return redirect()->route('pdfdesign.preview')
-            ->with('success', 'Selección guardada exitosamente');
+        if ($request->has('footer_logos')) {
+            foreach ($request->input('footer_logos') as $logoId) {
+                $logo = PdfLogo::find($logoId);
+                if ($logo) {
+                    $logo->location = 'pie de página';
+                    $logo->section = 'footer';
+                    $logo->save();
+                }
+            }
+        }
+        return redirect()->route('pdfdesign.preview')->with('success', 'Selección guardada exitosamente');
     }
-
 
     public function preview()
     {
-        $pdfDesign = PdfDesign::first(); // Obtener el primer diseño PDF de la base de datos
+        $pdfDesign = PdfDesign::first();
         $logos = PdfLogo::whereIn('id', array_merge($pdfDesign->header_logos ?? [], $pdfDesign->footer_logos ?? []))->get();
         return view('users.pdf_design_preview', compact('pdfDesign', 'logos'));
+    }
+
+    public function saveDesign(Request $request)
+    {
+        foreach ($request->logos as $logoData) {
+            $logo = PdfLogo::find($logoData['id']);
+            if ($logo) {
+                $logo->position_x = $logoData['position_x'];
+                $logo->position_y = $logoData['position_y'];
+                $logo->width = $logoData['width'];
+                $logo->height = $logoData['height'];
+                $logo->save();
+            }
+        }
+
+        return response()->json(['success' => 'Cambios guardados correctamente.']);
     }
 }
 

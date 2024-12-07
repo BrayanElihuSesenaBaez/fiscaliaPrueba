@@ -20,7 +20,6 @@ class ImportPostalCodes extends Command
             return;
         }
 
-        // Limpiar las tablas antes de importar los datos
         $this->clearOldData();
 
         $this->info("Importando archivo: $file");

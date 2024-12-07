@@ -32,8 +32,7 @@ class LocationController extends Controller{
 
     public function getColonies($zipCode)
     {
-        // Obtener colonias con el tipo de asentamiento cargado
-        $settlements = Settlement::with('settlementType') // Aquí se carga la relación settlementType
+        $settlements = Settlement::with('settlementType')
         ->whereHas('zipCode', function($query) use ($zipCode) {
             $query->where('zip_code', $zipCode);
         })

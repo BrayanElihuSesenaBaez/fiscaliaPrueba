@@ -15,13 +15,9 @@ use App\Models\PdfLogo;
 
 class ReportController extends Controller{
 
-    //Muestra la lista de reportes filtrados para el 'Fiscal General'
-    public function index(Request $request)
-    {
-        //Consula para obtener todos los reportes
+    public function index(Request $request){
         $query = Report::query();
 
-        // Filtra por palabras clave (fecha, número de expediente, nombre de la víctima)
         if ($request->has('keyword')) {
             $keyword = $request->input('keyword');
             $query->where('expedient_number', 'like', "%{$keyword}%")
@@ -30,19 +26,14 @@ class ReportController extends Controller{
                 ->orWhere('last_name', 'like', "%{$keyword}%");
         }
 
-        // Obtiene los reportes filtrados
-        $reports = $query->get(); //Ejecuta la consulta y obtiene el o los reportes buscados
+        $reports = $query->get();
 
         return view('dashboard', compact('reports'));
     }
 
-    // Muestra el formulario para crear un reporte
     public function create(){
-        // Se obtiebe la fecha y hora actual
         $currentDate = Carbon::now()->setTimezone('America/Mexico_City')->format('Y-m-d\TH:i');
 
-
-        // Obtiene todas categorias, subcategorias de delitos, estados y municipios de México
         $categories = Category::all();
         $subcategories = Subcategory::all();
         $states = State::all();
@@ -50,10 +41,8 @@ class ReportController extends Controller{
         return view('reports.create', compact( 'categories', 'subcategories', 'states', 'municipalities', 'currentDate'));
     }
 
-
-    // Guarda el reporte en la base de datos y generar el PDF
-    public function store(Request $request){
-        // Valida los campos del formulario
+    public function store(Request $request)
+    {
 
         $request->validate([
             'report_date' => 'required|date',
@@ -73,8 +62,6 @@ class ReportController extends Controller{
             'residence_state_id' => 'required|exists:states,id',
             'residence_municipality_id' => 'required|exists:municipalities,id',
 
-//            'colony' => 'required|string',
-//            'code_postal' => 'required|string',
             'residence_code_postal' => 'required|string',
             'residence_colony' => 'required|string',
             'residence_city' => 'nullable|string',
@@ -98,7 +85,6 @@ class ReportController extends Controller{
                     }
                 },
             ],
-            // Otras validaciones
 
             'incident_colony' => 'required|string',
             'incident_code_postal' => 'required|string',
@@ -108,12 +94,12 @@ class ReportController extends Controller{
             'suffered_damage' => 'required|string',
 
             'has_witnesses' => 'required|string|in:yes,no',
-            'numWitnesses' => 'nullable|integer|min:1|max:15',  // Asegurarse de que el número de testigos sea un valor adecuado
-            'witnesses' => 'nullable|array',  // Ahora 'witnesses' es un array
-            'witnesses.*.full_name' => 'required|string|max:255',  // Validación de nombre completo
-            'witnesses.*.phone' => 'nullable|string|max:20',  // Validación de teléfono
-            'witnesses.*.relationship' => 'nullable|string|max:255',  // Validación de parentesco
-            'witnesses.*.incident_description' => 'nullable|string',  // Validación de la descripción
+            'numWitnesses' => 'nullable|integer|min:1|max:15',
+            'witnesses' => 'nullable|array',
+            'witnesses.*.full_name' => 'required|string|max:255',
+            'witnesses.*.phone' => 'nullable|string|max:20',
+            'witnesses.*.relationship' => 'nullable|string|max:255',
+            'witnesses.*.incident_description' => 'nullable|string',
 
 
             'emergency_call' => 'required|string',
@@ -123,18 +109,16 @@ class ReportController extends Controller{
             'subcategory_id' => 'required|exists:subcategories,id',
         ]);
 
-        // Obtiene los nombres de la categoria y subcategoria
-        $category = Category::findOrFail($request->category_id); //Busca la categoria por ID
-        $subcategory = Subcategory::findOrFail($request->subcategory_id);//Busca la subcategoria por ID
-
-        // Genera un numero de expediente basado en la información del formulario
+        $category = Category::findOrFail($request->category_id);
+        $subcategory = Subcategory::findOrFail($request->subcategory_id);
         $expedientNumber = $this->generateExpedientNumber($request);
 
-
-        // Se crea el reporte
         $report = Report::create([
             'report_date' => $request->report_date,
             'expedient_number' => $expedientNumber,
+
+            'pdf_blob' => null,
+
             'last_name' => $request->last_name,
             'mother_last_name' => $request->mother_last_name,
             'first_name' => $request->first_name,
@@ -150,9 +134,6 @@ class ReportController extends Controller{
 
             'residence_state' => State::findOrFail($request->residence_state_id)->name,
             'residence_municipality' => Municipality::findOrFail($request->residence_municipality_id)->name,
-
-//            'colony' => $request->colony,
-//            'code_postal' => $request->code_postal,
 
             'residence_code_postal' => $request->residence_code_postal,
             'residence_colony' => $request->residence_colony,
@@ -182,32 +163,28 @@ class ReportController extends Controller{
             'detailed_account' => $request->detailed_account,
             'category_id' => $request->category_id,
             'subcategory_id' => $request->subcategory_id,
-            'category_name' =>$category->name,
+            'category_name' => $category->name,
             'subcategory_name' => $subcategory->name,
             'pdf_path' => null,
         ]);
 
-        // Si hay testigos, guardarlos en la base de datos
         if ($request->has('witnesses') && !empty($request->witnesses)) {
             foreach ($request->witnesses as $witnessData) {
                 if (!empty($witnessData['full_name'])) {
-                    // Crear el testigo y asociarlo con el reporte
                     Witness::create([
                         'full_name' => $witnessData['full_name'],
                         'phone' => $witnessData['phone'] ?? null,
                         'relationship' => $witnessData['relationship'] ?? null,
-                        'description' => $witnessData['description'] ?? null,
-                        'report_id' => $report->id, // Asegúrate de asociar el testigo con el reporte
+                        'incident_description' => $witnessData['incident_description'] ?? null,
+                        'report_id' => $report->id,
                     ]);
                 }
             }
         }
-        // Cargar los detalles de los logotipos
-        $logosDetails = PdfLogo::all(); // Suponiendo que tienes un modelo Logo para manejar los logotipos
+        $logos = PdfLogo::where('is_active', 1)->get();
 
-        // Genera el PDF
         $data = [
-            'logosDetails' => $logosDetails,  // Se pasa los detalles de los logotipos
+            'logos' => $logos,
             'report_date' => $report->report_date,
             'expedient_number' => $report->expedient_number,
             'last_name' => $report->last_name,
@@ -225,9 +202,6 @@ class ReportController extends Controller{
 
             'residence_state' => $report->residence_state,
             'residence_municipality' => $report->residence_municipality,
-
-//            'colony' => $report->colony,
-//            'code_postal' => $report->code_postal,
 
             'residence_code_postal' => $report->residence_code_postal,
             'residence_colony' => $report->residence_colony,
@@ -257,37 +231,32 @@ class ReportController extends Controller{
             'detailed_account' => $report->detailed_account,
             'category_name' => $report->category->name,
             'subcategory_name' => $report->subcategory->name,
-
         ];
 
-
-        // Crea y guarda el PDF
         $pdf = Pdf::loadView('pdf.view', $data);
-        $pdfPath = 'pdfs/report_' . $report->id . '.pdf';
-        $pdf->save(storage_path("app/public/{$pdfPath}"));
+        $pdfContent = $pdf->output();
 
-        // Guarda la ruta del PDF en el reporte
-        $report->update(['pdf_path' => $pdfPath]);
+        if (!$pdfContent) {
+            return back()->withErrors('Hubo un error al generar el PDF.');
+        }
 
-        return redirect()->route('reports.pdf', ['reportId' => $report->id]);
+        $report->update(['pdf_blob' => $pdfContent]);
+
+        \Log::info('PDF guardado en la base de datos para el reporte ID: ' . $report->id . ' con tamaño: ' . strlen($pdfContent));
+
+        $pdfDownloadUrl = route('reports.downloadPdf', $report->id);
+        return redirect()->route('dashboard')->with('pdf_download_url', $pdfDownloadUrl);
     }
-
-    // Función para generar el número de expediente
     protected function generateExpedientNumber(Request $request) {
-        // Genera un número de expediente basado en la primera letra del nombre, el apellido y la fecha actual
         return strtoupper(substr($request->first_name, 0, 1) . $request->last_name . now()->format('YmdHis'));
     }
 
-    // Muestra el PDF del reporte
     public function show($id){
-        // Encuentra el reporte por ID
         $report = Report::findOrFail($id);
         return view('reports.show', compact('report'));
     }
 
-    // Mostrar el formulario de edición de un reporte
-    public function edit($id)
-    {
+    public function edit($id){
         $report = Report::findOrFail($id);
         $categories = Category::all();
         $subcategories = Subcategory::all();
@@ -295,7 +264,6 @@ class ReportController extends Controller{
         return view('reports.edit', compact('report', 'categories', 'subcategories'));
     }
 
-    // Funcion para actualizar un reporte existente
     public function update(Request $request, $id)
     {
         $request->validate([
@@ -335,11 +303,9 @@ class ReportController extends Controller{
             'subcategory_id' => 'required|exists:subcategories,id',
         ]);
 
-        // Buscar el reporte y actualiza sus datos
         $report = Report::findOrFail($id);
         $report->update($request->all());
 
-        // Actualiza el PDF con los nuevos datos
         $data = [
             'expedient_number' => $request->expedient_number,
             'last_name' => $request->last_name,
@@ -381,29 +347,55 @@ class ReportController extends Controller{
         $pdf = Pdf::loadView('pdf.view', $data);
         $pdfPath = 'pdfs/report_' . $report->id . '.pdf';
         $pdf->save(storage_path("app/public/{$pdfPath}"));
-
         $report->update(['pdf_path' => $pdfPath]);
 
         return redirect()->route('dashboard')->with('success', 'Reporte actualizado correctamente.');
     }
 
-    // Funcion para eliminar un reporte
     public function destroy($id){
-        $report = Report::findOrFail($id); // Encuentra el reporte por ID
+        $report = Report::findOrFail($id);
         $report->delete();
         return redirect()->route('dashboard');
     }
 
-    // Funcion para buscar reportes por número de expediente o fecha
     public function search(Request $request){
         $query = $request->input('query');
 
-        // Filtra reportes por número de expediente o fecha
         $reports = Report::where('expedient_number', 'LIKE', "%$query%")
             ->orWhereDate('report_date', $query)
             ->get();
 
         return view('dashboard', compact('reports'));
+    }
+
+    public function viewPdf(Report $report)
+    {
+        if (!$report->pdf_blob) {
+            return redirect()->route('dashboard')->withErrors('El PDF no está disponible.');
+        }
+
+        $fileName = $report->expedient_number . '.pdf';
+
+        return response($report->pdf_blob)
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', "inline; filename=\"{$fileName}\"");
+    }
+
+
+    public function downloadPdf(Report $report)
+    {
+        if (!$report->pdf_blob) {
+            return redirect()->route('dashboard')->withErrors('No se ha generado el PDF para este reporte.');
+        }
+
+        $fileName = 'reporte_' . $report->expedient_number . '.pdf';
+
+        return response()->streamDownload(function () use ($report) {
+            echo $report->pdf_blob;
+        }, $fileName, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $fileName . '"'
+        ]);
     }
 }
 

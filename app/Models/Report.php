@@ -63,11 +63,20 @@ class Report extends Model{
         'subcategory_id',
         'category_name',
         'subcategory_name',
-        'pdf_path'
+        'pdf_path',
+        'pdf_blob'
     ];
+
+    public function getRouteKeyName()
+    {
+        return 'expedient_number';
+    }
     protected $casts = [
         'witnesses' => 'array',
     ];
+
+
+
     //Relación con el modelo Category
     public function category(){
         return $this->belongsTo(Category::class);
@@ -77,8 +86,10 @@ class Report extends Model{
         return $this->belongsTo(Subcategory::class);
     }
     // En el archivo Report.php
-    public function witnesses() {
+    public function witnesses()
+    {
         return $this->hasMany(Witness::class);
     }
+
 }
 
