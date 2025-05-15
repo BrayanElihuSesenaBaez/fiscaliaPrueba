@@ -10,6 +10,7 @@ class Report extends Model{
 
     //Campos de la tabla reports para que se puedan llenar masivamente
     protected $fillable = [
+        'user_id',
         'report_date',
         'expedient_number',
 
@@ -64,7 +65,9 @@ class Report extends Model{
         'category_name',
         'subcategory_name',
         'pdf_path',
-        'pdf_blob'
+        'pdf_blob',
+
+        'vehicle_related'
     ];
 
     public function getRouteKeyName()
@@ -85,10 +88,19 @@ class Report extends Model{
     public function subcategory(){
         return $this->belongsTo(Subcategory::class);
     }
-    // En el archivo Report.php
     public function witnesses()
     {
         return $this->hasMany(Witness::class);
+    }
+
+    public function vehicles()
+    {
+        return $this->hasMany(Vehicle::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id', 'id'); // Asegúrate de que 'user_id' esté correcto
     }
 
 }

@@ -16,9 +16,10 @@
                             <img id="logoPreview" style="width: 50px; display: none;" class="img-thumbnail">
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-success">
+                    <button type="submit" class="btn btn-animated" style="background-color: {{ $settings->button_color }}; border-color: {{ $settings->button_color }}; color: white;">
                         <i class="bi bi-upload"></i> Subir Logo
                     </button>
+
                 </form>
             </div>
         </div>
@@ -30,13 +31,13 @@
                     @foreach ($logos as $logo)
                         <div class="col-6 col-sm-4 col-md-3 col-lg-2">
                             <div class="card text-center shadow-sm">
-                                <img src="{{ route('pdf_design.showImage', $logo->id) }}" alt="{{ $logo->name }}" class="card-img-top logo-thumbnail">
+                            <img src="{{ route('pdf_design.showImage', $logo->id) }}" alt="{{ $logo->name }}" class="card-img-top logo-thumbnail" style="width: 100%; height: auto; max-height: 50px;">
                                 <div class="card-body">
                                     <h5 class="card-title text-truncate">{{ $logo->name }}</h5>
                                     <form action="{{ route('pdf_design.destroy', $logo->id) }}" method="POST">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-danger btn-sm">
+                                        <button type="submit" class="btn btn-animated" style="background-color: {{ $settings->button_color }}; border-color: {{ $settings->button_color }}; color: white;">
                                             <i class="bi bi-trash"></i> Eliminar
                                         </button>
                                     </form>
@@ -60,7 +61,7 @@
                                 @foreach ($logos as $logo)
                                     <div class="col-6 col-sm-4">
                                         <div class="card text-center shadow-sm">
-                                            <img src="{{ route('pdf_design.showImage', $logo->id) }}" alt="{{ $logo->name }}" class="card-img-top logo-thumbnail">
+                                            <img src="{{ route('pdf_design.showImage', $logo->id) }}" alt="{{ $logo->name }}" class="card-img-top logo-thumbnail" style="width: 100%; height: auto; max-height: 50px;">
                                             <div class="card-body">
                                                 <input type="checkbox" name="header_logos[]" value="{{ $logo->id }}" id="headerLogo{{ $logo->id }}">
                                                 <label for="headerLogo{{ $logo->id }}">Seleccionar</label>
@@ -77,7 +78,7 @@
                                 @foreach ($logos as $logo)
                                     <div class="col-6 col-sm-4">
                                         <div class="card text-center shadow-sm">
-                                            <img src="{{ route('pdf_design.showImage', $logo->id) }}" alt="{{ $logo->name }}" class="card-img-top logo-thumbnail">
+                                            <img src="{{ route('pdf_design.showImage', $logo->id) }}" alt="{{ $logo->name }}" class="card-img-top logo-thumbnail" style="width: 100%; height: auto; max-height: 50px;">
                                             <div class="card-body">
                                                 <input type="checkbox" name="footer_logos[]" value="{{ $logo->id }}" id="footerLogo{{ $logo->id }}">
                                                 <label for="footerLogo{{ $logo->id }}">Seleccionar</label>
@@ -88,7 +89,7 @@
                             </div>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary mt-3">
+                    <button type="submit" class="btn btn-animated" style="background-color: {{ $settings->button_color }}; border-color: {{ $settings->button_color }}; color: white;">
                         <i class="bi bi-save"></i> Guardar Selección
                     </button>
                 </form>

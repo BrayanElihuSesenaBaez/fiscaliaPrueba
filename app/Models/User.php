@@ -42,4 +42,12 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    protected $table = 'users';
+    protected $primaryKey = 'id';
+
+    public function reports()
+    {
+        return $this->hasMany(Report::class, 'user_id', 'id');
+    }
 }

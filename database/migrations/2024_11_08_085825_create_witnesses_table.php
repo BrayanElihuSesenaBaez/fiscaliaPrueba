@@ -13,21 +13,17 @@ return new class extends Migration
     {
         Schema::create('witnesses', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('report_id'); // Clave foránea que relaciona al reporte
-            $table->string('full_name');              // Nombre completo del testigo
-            $table->string('phone')->nullable();                   // Número de teléfono del testigo
-            $table->string('relationship')->nullable();            // Parentesco con la víctima
-            $table->text('incident_description')->nullable();      // Descripción del suceso
+            $table->unsignedBigInteger('report_id');
+            $table->string('full_name');
+            $table->string('phone')->nullable();
+            $table->string('relationship')->nullable();
+            $table->text('incident_description')->nullable();
             $table->timestamps();
 
-            // Define la relación con la tabla reports
             $table->foreign('report_id')->references('id')->on('reports')->onDelete('cascade');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('witnesses');

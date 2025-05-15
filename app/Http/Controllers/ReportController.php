@@ -10,23 +10,48 @@ use App\Models\Subcategory;
 use App\Models\Witness;
 use App\Models\State;
 use App\Models\Municipality;
-use Carbon\Carbon; //Biblioteca de fechas y horas
+use Carbon\Carbon;
 use App\Models\PdfLogo;
+use Illuminate\Support\Facades\Auth;
 
 class ReportController extends Controller{
 
-    public function index(Request $request){
-        $query = Report::query();
+    public function index(Request $request)
+    {
+        $user = Auth::user(); // Usuario autenticado
+        $query = Report::with('user'); // Cargar la relación con el usuario
 
-        if ($request->has('keyword')) {
-            $keyword = $request->input('keyword');
-            $query->where('expedient_number', 'like', "%{$keyword}%")
-                ->orWhere('report_date', 'like', "%{$keyword}%")
-                ->orWhere('first_name', 'like', "%{$keyword}%")
-                ->orWhere('last_name', 'like', "%{$keyword}%");
+        // Filtrar reportes según el rol
+        if (!$user->hasRole('Fiscal General')) {
+            $query->where('user_id', $user->id);
         }
 
-        $reports = $query->get();
+        // Búsqueda por palabras clave
+        if ($request->has('query') && !empty($request->input('query'))) {
+            $keyword = $request->input('query');
+
+            $query->where(function ($q) use ($keyword, $user) {
+                $q->where('expedient_number', 'like', "%{$keyword}%")
+                    ->orWhere('report_date', 'like', "%{$keyword}%")
+                    ->orWhere('first_name', 'like', "%{$keyword}%")
+                    ->orWhere('last_name', 'like', "%{$keyword}%");
+
+                // Solo el Fiscal General puede buscar por usuario
+                if ($user->hasRole('Fiscal General')) {
+                    $q->orWhereHas('user', function ($u) use ($keyword) {
+                        // Concatenar los campos y buscar en cualquiera de ellos
+                        $u->whereRaw("CONCAT(name, ' ', firstLastName, ' ', secondLastName) LIKE ?", ["%{$keyword}%"])
+                            ->orWhereRaw("CONCAT(firstLastName, ' ', secondLastName, ' ', name) LIKE ?", ["%{$keyword}%"])
+                            ->orWhereRaw("CONCAT(firstLastName, ' ', name) LIKE ?", ["%{$keyword}%"])
+                            ->orWhereRaw("CONCAT(secondLastName, ' ', name) LIKE ?", ["%{$keyword}%"])
+                            ->orWhereRaw("CONCAT(secondLastName, ' ', firstLastName, ' ', name) LIKE ?", ["%{$keyword}%"]);
+                    });
+                }
+            });
+        }
+
+        // Obtener los reportes paginados
+        $reports = $query->paginate(10);
 
         return view('dashboard', compact('reports'));
     }
@@ -68,13 +93,13 @@ class ReportController extends Controller{
             'incident_city' => 'nullable|string',
 
             'street' => 'required|string',
-            'ext_number' => 'required|string',
+            'ext_number' => 'nullable|string',
             'int_number' => 'nullable|string',
             'incident_date_time' => 'required|date',
 
             'incident_state_id' => 'required|exists:states,id',
             'incident_municipality_id' => [
-                'required',
+                'nullable',
                 function ($attribute, $value, $fail) use ($request) {
                     $isValid = Municipality::where('id', $value)
                         ->where('state_id', $request->incident_state_id)
@@ -86,12 +111,26 @@ class ReportController extends Controller{
                 },
             ],
 
-            'incident_colony' => 'required|string',
-            'incident_code_postal' => 'required|string',
-            'incident_street' => 'required|string',
-            'incident_ext_number' => 'required|string',
+            'incident_colony' => 'nullable|string',
+            'incident_code_postal' => 'nullable|string',
+            'incident_street' => 'nullable|string',
+            'incident_ext_number' => 'nullable|string',
             'incident_int_number' => 'nullable|string',
             'suffered_damage' => 'required|string',
+
+            'vehicle_related' => 'required|string|in:yes,no',
+            'marca' => 'nullable:vehicle_related,yes|string',
+            'modelo' => 'nullable:vehicle_related,yes|string',
+            'color' => 'nullable:vehicle_related,yes|string',
+            'placa' => 'nullable:estadoPlaca,!Placa Extranjera|string',
+            'numeroSerie' => 'nullable:vehicle_related,yes|string|unique:vehicles,numeroSerie',
+            'numeroMotor' => 'nullable|string',
+            'submarca' => 'nullable|string',
+            'tipoUso' => 'nullable:vehicle_related,yes|string',
+            'estadoPlaca' => 'nullable:vehicle_related,yes|string',
+            'placaExtranjera' => 'nullable|string',
+            'señasParticulares' => 'nullable|string',
+
 
             'has_witnesses' => 'required|string|in:yes,no',
             'numWitnesses' => 'nullable|integer|min:1|max:15',
@@ -113,7 +152,12 @@ class ReportController extends Controller{
         $subcategory = Subcategory::findOrFail($request->subcategory_id);
         $expedientNumber = $this->generateExpedientNumber($request);
 
+        $validatedData = $request->all();
+        $validatedData['user_id'] = Auth::id();
+
         $report = Report::create([
+            'user_id' => Auth::id(),
+
             'report_date' => $request->report_date,
             'expedient_number' => $expedientNumber,
 
@@ -166,6 +210,9 @@ class ReportController extends Controller{
             'category_name' => $category->name,
             'subcategory_name' => $subcategory->name,
             'pdf_path' => null,
+
+            'vehicle_related' => $request->vehicle_related == 'yes' ? true : false,
+            'vehicles' => $request->vehicles,
         ]);
 
         if ($request->has('witnesses') && !empty($request->witnesses)) {
@@ -182,6 +229,22 @@ class ReportController extends Controller{
             }
         }
         $logos = PdfLogo::where('is_active', 1)->get();
+
+        if ($request->vehicle_related === 'yes') {
+            $vehicleData = $request->only([
+                'marca', 'modelo', 'numeroSerie', 'numeroMotor', 'tipoUso',
+                'color', 'placa', 'estadoPlaca', 'placaExtranjera', 'submarca',
+                'procedenciaVehiculo', 'NRPV', 'placaPermiso', 'clase', 'aseguradora',
+                'señasParticulares'
+            ]);
+
+            if ($request->estadoPlaca === 'Placa Extranjera') {
+                $vehicleData['placa'] = null;
+            }
+
+            $report->vehicles()->create($vehicleData);
+        }
+
 
         $data = [
             'logos' => $logos,
@@ -231,6 +294,8 @@ class ReportController extends Controller{
             'detailed_account' => $report->detailed_account,
             'category_name' => $report->category->name,
             'subcategory_name' => $report->subcategory->name,
+
+            'vehicles' => $report->vehicles,
         ];
 
         $pdf = Pdf::loadView('pdf.view', $data);
@@ -241,8 +306,6 @@ class ReportController extends Controller{
         }
 
         $report->update(['pdf_blob' => $pdfContent]);
-
-        \Log::info('PDF guardado en la base de datos para el reporte ID: ' . $report->id . ' con tamaño: ' . strlen($pdfContent));
 
         $pdfDownloadUrl = route('reports.downloadPdf', $report->id);
         return redirect()->route('dashboard')->with('pdf_download_url', $pdfDownloadUrl);
@@ -358,16 +421,6 @@ class ReportController extends Controller{
         return redirect()->route('dashboard');
     }
 
-    public function search(Request $request){
-        $query = $request->input('query');
-
-        $reports = Report::where('expedient_number', 'LIKE', "%$query%")
-            ->orWhereDate('report_date', $query)
-            ->get();
-
-        return view('dashboard', compact('reports'));
-    }
-
     public function viewPdf(Report $report)
     {
         if (!$report->pdf_blob) {
@@ -397,6 +450,7 @@ class ReportController extends Controller{
             'Content-Disposition' => 'attachment; filename="' . $fileName . '"'
         ]);
     }
+
 }
 
 

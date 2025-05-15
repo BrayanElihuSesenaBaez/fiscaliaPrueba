@@ -4,7 +4,12 @@
     <div class="container">
         <h2 class="mt-5">Lista de Usuarios</h2>
 
-        <a href="{{ route('users.create') }}" class="btn btn-primary mb-3">Crear Nuevo Usuario</a> <!-- Enlace para crear un nuevo usuario -->
+        <a href="{{ route('users.create') }}"
+            class="btn btn-animated"
+            style="background-color: {{ $settings->button_color }}; border-color: {{ $settings->button_color }}; color: white;">
+                Crear Nuevo Usuario
+        </a>
+
 
         @if(session('success'))
             <div class="alert alert-success">

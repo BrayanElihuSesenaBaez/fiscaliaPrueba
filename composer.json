@@ -16,6 +16,7 @@
         "laravel/framework": "^10.10",
         "laravel/sanctum": "^3.3",
         "laravel/tinker": "^2.8",
+        "livewire/livewire": "^3.5",
         "maatwebsite/excel": "^3.1",
         "psy/psysh": "^0.12.0",
         "s-ichikawa/laravel-sendgrid-driver": "*",
@@ -25,6 +26,7 @@
     "require-dev": {
         "barryvdh/laravel-ide-helper": "*",
         "fakerphp/faker": "^1.9.1",
+        "kitloong/laravel-migrations-generator": "^7.0",
         "laravel/pint": "^1.0",
         "laravel/sail": "^1.38",
         "mockery/mockery": "^1.4.4",

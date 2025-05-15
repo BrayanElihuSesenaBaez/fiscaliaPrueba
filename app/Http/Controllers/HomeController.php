@@ -15,7 +15,7 @@ class HomeController extends Controller{
         if (Auth::user()->hasRole('Fiscal General')) {
             return view('dashboard');
         } else {
-            return view('app_user');
+            return view('dashboard');
         }
     }
 }

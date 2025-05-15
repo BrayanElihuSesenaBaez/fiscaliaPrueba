@@ -106,7 +106,7 @@
                     <input type="email" class="form-control" name="email" id="email" value="{{ old('email', $report->email) }}" required>
                 </div>
 
-                <button type="button" class="btn btn-primary" onclick="nextPage(2)">Siguiente</button>
+                <button type="button" class="btn" onclick="nextPage(2)" style="background-color: {{ $settings->button_color }}; border-color: {{ $settings->button_color }}; color: white;">Siguiente</button>
 
             </div>
 
@@ -151,7 +151,7 @@
                 </div>
 
                 <button type="button" class="btn btn-secondary" onclick="prevPage(1)">Anterior</button>
-                <button type="button" class="btn btn-primary" onclick="nextPage(3)">Siguiente</button>
+                <button type="button" class="btn" onclick="nextPage(3)" style="background-color: {{ $settings->button_color }}; border-color: {{ $settings->button_color }}; color: white;">Siguiente</button>
 
             </div>
 
@@ -201,7 +201,7 @@
                 </div>
 
                 <button type="button" class="btn btn-secondary" onclick="prevPage(1)">Anterior</button>
-                <button type="button" class="btn btn-primary" onclick="nextPage(3)">Siguiente</button>
+                <button type="button" class="btn" onclick="nextPage(3)" style="background-color: {{ $settings->button_color }}; border-color: {{ $settings->button_color }}; color: white;">Siguiente</button>
 
 
             </div>
@@ -265,7 +265,7 @@
 
                 <!-- Botones para navegar entre páginas y enviar el formulario -->
                 <button type="button" class="btn btn-secondary" onclick="prevPage(2)">Anterior</button>
-                <button type="submit" class="btn btn-primary mt-3">Actualizar Reporte</button>
+                <button type="submit" class="btn mt-3" style="background-color: {{ $settings->button_color }}; border-color: {{ $settings->button_color }}; color: white;">Actualizar Reporte</button>
 
             </div>
 

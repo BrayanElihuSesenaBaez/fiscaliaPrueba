@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\SettingsController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\PdfController;
@@ -12,17 +13,14 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\PdfDesignController;
 
-
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LogoutController::class, 'logout'])->name('logout');
-Route::get('/home', [HomeController::class, 'index'])->name('home');
 
 
 Route::resource('users', UserController::class);
 
-Route::middleware(['auth', 'role:Fiscal General'])->group(function () {
-
+Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [ReportController::class, 'index'])->name('dashboard');
 
     Route::resource('users', UserController::class);
@@ -80,10 +78,10 @@ Route::middleware(['auth'])->group(function () {
         if (Auth::user()->hasRole('Fiscal General')) {
             return redirect()->route('dashboard');
         } else {
-            return view('home');
+            return redirect()->route('dashboard');
         }
     })->name('home');
-    Route::get('/home', [HomeController::class, 'index'])->name('home');
+    Route::get('/dashboard', [ReportController::class, 'index'])->name('dashboard');
     Route::get('/reports/create', [ReportController::class, 'create'])->name('reports.create');
     Route::post('/reports', [ReportController::class, 'store'])->name('reports.store');
     Route::get('reports/{reportId}/pdf', [PdfController::class, 'generatePdf'])->name('reports.pdf');
@@ -99,4 +97,14 @@ Route::get('/generate-pdf/{reportId}', [PdfController::class, 'generatePdf']);
 
 
 
+/*para en metodo get*/
+Route::get('/settings', [SettingsController::class, 'showForm'])->name('settings.form');
+Route::post('/settings', [SettingsController::class, 'update'])->name('settings.update');
+    Route::get('/color', function () {
+    return view('color'); // Esto carga el archivo color.blade.php
+})->name('color');;
 
+
+Route::get('/vista-prueba', function () {
+    return view('pdf.view');
+});

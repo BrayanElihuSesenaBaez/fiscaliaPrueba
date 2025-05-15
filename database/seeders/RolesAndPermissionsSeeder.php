@@ -26,8 +26,6 @@ class RolesAndPermissionsSeeder extends Seeder{
         $fiscalGeneral = Role::firstOrCreate(['name' => 'Fiscal General']);
         $fiscalGeneral->syncPermissions($permissions); //Se asignan todos los permisos al rol
 
-        // Roles para fiscales especializados
-        //Se corrigieron los nombres de las especialidades
         $fiscalesEspecializados = [
             'Fiscal Especializado en Delitos que atentan contra la vida y la integridad corporal',
             'Fiscal Especializado en Delitos que atentan contra la libertad personal',
@@ -38,19 +36,15 @@ class RolesAndPermissionsSeeder extends Seeder{
             'Fiscal Especializado en Delitos que atentan contra otros bienes jurídicos afectados (del fuero común)',
         ];
 
-        //Creacion de roles para fiscales especializados
         foreach ($fiscalesEspecializados as $fiscalRole) {
             Role::firstOrCreate(['name' => $fiscalRole]);
         }
 
-        // Crear usuario Fiscal General (admin) si no existe
         $user = User::firstOrCreate(
-            ['email' => 'admin@example.com'], // Busca el usuario por su email
+            ['email' => 'admin@example.com'],
             [
                 'name' => 'Carlos',
-                'password' => bcrypt('password'), // Contraseña encriptada para el usuario
-
-                //Nuevos campos agregados
+                'password' => bcrypt('password'),
                 'firstLastName' => 'García',
                 'secondLastName' => 'Rodríguez',
                 'curp' => 'GARC840623HDFRRL09',
@@ -65,7 +59,6 @@ class RolesAndPermissionsSeeder extends Seeder{
             ]
         );
 
-        // Asignar rol de Fiscal General al usuario
         if (!$user->hasRole('Fiscal General')) {
             $user->assignRole($fiscalGeneral);
         }

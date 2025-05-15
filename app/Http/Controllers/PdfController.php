@@ -3,13 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Report;
+use App\Models\Vehicle;
 use App\Models\PdfLogo;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class PdfController extends Controller
 {
     public function generatePdf($reportId){
-        $report = Report::with(['category', 'subcategory'])->findOrFail($reportId);
+        $report = Report::with(['category', 'subcategory', 'vehicle'])->findOrFail($reportId);
 
         $logos = PdfLogo::where('is_active', 1)->get();
 
@@ -55,6 +56,8 @@ class PdfController extends Controller
             'subcategory_name' => $report->subcategory->name,
 
             'logos' => $logos,
+
+            'vehicles' => $report->vehicles,
         ];
 
         $pdf = Pdf::loadView('pdf.view', $data);

@@ -9,7 +9,6 @@ class Category extends Model{
 
     use HasFactory;
 
-    //Se define la relación uno a muchos con el modelo Subcategory
     public function subcategories(){
         return $this->hasMany(Subcategory::class);
     }

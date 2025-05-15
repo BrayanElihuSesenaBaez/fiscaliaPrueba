@@ -13,6 +13,7 @@
     "dependencies": {
         "@interactjs/interactjs": "^1.10.27",
         "cropperjs": "^1.6.2",
-        "interactjs": "^1.10.27"
+        "interactjs": "^1.10.27",
+        "sweetalert2": "^11.15.10"
     }
 }

@@ -11,8 +11,6 @@ class Municipality extends Model
 
     protected $fillable = ['name', 'state_id'];
 
-
-    // Relación con el modelo State
     public function state()
     {
         return $this->belongsTo(State::class, 'state_id');
