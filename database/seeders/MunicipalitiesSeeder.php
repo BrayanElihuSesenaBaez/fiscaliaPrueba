@@ -93,19 +93,18 @@ class MunicipalitiesSeeder extends Seeder
         foreach ($municipalities as $stateName => $municipalityNames) {
             $state = State::where('name', $stateName)->first(); // Busca el estado
 
-            // Si no existe el estado, lo crea
             if (!$state) {
                 $state = State::create(['name' => $stateName]);
             }
 
             foreach ($municipalityNames as $municipalityName) {
-                // Verifica si el municipio ya existe para evitar duplicados
+                // Evita municipios duplicados
                 $municipalityExists = Municipality::where('name', $municipalityName)
                     ->where('state_id', $state->id)
                     ->exists();
 
                 if (!$municipalityExists) {
-                    // Si no existe, crea el municipio y lo relaciona con el estado
+                    // Crea el municipio y lo relaciona con el estado
                     $state->municipalities()->create(['name' => $municipalityName]);
                 }
             }
